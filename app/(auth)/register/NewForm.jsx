@@ -452,7 +452,7 @@ function RegisterForm() {
                               htmlFor="member_no"
                               className="text-sm font-medium text-gray-700"
                             >
-                              Payroll Number
+                              Member Number
                             </Label>
                             <Field
                               as={Input}

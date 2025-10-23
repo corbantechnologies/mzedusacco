@@ -10,7 +10,7 @@ export const authOptions = {
         member_no: {
           label: "Member Number",
           type: "text",
-          placeholder: "Enter your member number or payroll number",
+          placeholder: "Enter your member number",
         },
         password: {
           label: "Password",
