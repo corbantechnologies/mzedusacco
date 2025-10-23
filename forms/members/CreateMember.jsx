@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
-function CreateMember({ closeModal,  openModal }) {
+function CreateMember({ closeModal, openModal }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const token = useAxiosAuth();
@@ -168,7 +168,7 @@ function CreateMember({ closeModal,  openModal }) {
                         htmlFor="member_no"
                         className="text-base text-black font-medium"
                       >
-                        Payroll Number
+                        Member Number
                       </Label>
                       <Field
                         as={Input}

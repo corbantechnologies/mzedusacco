@@ -25,16 +25,14 @@ function RegisterForm() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Image
-                        src="/auth-image-noBg-2.png"
-                        alt="Mzedu SACCO Logo"
-                        width={200}
-                        height={200}
-                        className="mx-auto"
-                      />
+              src="/auth-image-noBg-2.png"
+              alt="Mzedu SACCO Logo"
+              width={200}
+              height={200}
+              className="mx-auto"
+            />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-            Mzedu SACCO
-          </h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Mzedu SACCO</h1>
           <p className="text-lg text-gray-500">The SACCO for everyone</p>
         </div>
 
@@ -238,9 +236,7 @@ function RegisterForm() {
 
               {/* Identification */}
               <section>
-                <h2 className="text-2xl font-bold  mb-6">
-                  Identification
-                </h2>
+                <h2 className="text-2xl font-bold  mb-6">Identification</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="space-y-2">
                     <Label
@@ -312,9 +308,7 @@ function RegisterForm() {
 
               {/* Employment */}
               <section>
-                <h2 className="text-2xl font-bold  mb-6">
-                  Employment
-                </h2>
+                <h2 className="text-2xl font-bold  mb-6">Employment</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="space-y-2">
                     <Label
@@ -350,7 +344,7 @@ function RegisterForm() {
                           htmlFor="member_no"
                           className="text-sm font-medium text-gray-700"
                         >
-                          Payroll Number
+                          Member Number
                         </Label>
                         <Field
                           as={Input}
@@ -372,9 +366,7 @@ function RegisterForm() {
 
               {/* Password */}
               <section>
-                <h2 className="text-2xl font-bold  mb-6">
-                  Security
-                </h2>
+                <h2 className="text-2xl font-bold  mb-6">Security</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label
