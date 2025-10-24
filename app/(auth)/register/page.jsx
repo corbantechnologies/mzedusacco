@@ -11,13 +11,13 @@ function MemberSignUp() {
         <div className="bg-white z-50 h-[76px] p-4">
           <Image
             src="/mzeduLogo-noBg.png"
-            alt="Mzedu SACCO Logo"
-            width={100}
-            height={100}
+            alt="Mwanda Mzedu SACCO Logo"
+            width={80}
+            height={80}
             className=""
           />
         </div>
-      <div className="px-4 h-[calc(100vh-76px)] overflow-y-auto">
+      <div className="px-4 pb-8 h-[calc(100vh-76px)] overflow-y-auto">
         <RegisterForm />
       </div>
     </div>

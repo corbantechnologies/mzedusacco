@@ -27,7 +27,7 @@ function AccountActivation() {
             Account Activation
           </h1>
           <p className="text-gray-500 mt-2">
-            Set your password to activate your Mzedu SACCO account
+            Set your password to activate your Mwanda Mzedu SACCO account
           </p>
         </div>
 

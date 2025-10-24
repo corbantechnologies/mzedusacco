@@ -20,12 +20,12 @@ function SuccessPage() {
                   src="/logoNoBg.png"
                   width={96}
                   height={96}
-                  alt="Mzedu SACCO Logo"
+                  alt="Mwanda Mzedu SACCO Logo"
                   className="w-24 h-24 rounded-full shadow-2xl"
                 />
               </div>
               <h1 className="text-3xl sm:text-4xl font-bold text-primary mb-2">
-                Mzedu SACCO
+                Mwanda Mzedu SACCO
               </h1>
               <p className="text-lg text-gray-500">The SACCO for everyone</p>
             </div>

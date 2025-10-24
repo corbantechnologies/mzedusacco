@@ -53,13 +53,13 @@ function LoginForm() {
     <div>
       <Image
         src="/auth-image-noBg-2.png"
-        alt="Mzedu SACCO Logo"
+        alt="Mwanda Mzedu SACCO Logo"
         width={200}
         height={200}
         className="mx-auto"
       />
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-black">Mzedu SACCO</h1>
+        <h1 className="text-3xl font-bold text-black">Mwanda Mzedu SACCO</h1>
         <p className="text-gray-500">The SACCO for everyone</p>
       </div>
 
