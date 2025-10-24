@@ -8,9 +8,9 @@ const Login = () => {
     <div className="min-h-screen relative flex items-center justify-center p-4">
       <Image
                   src="/mzeduLogo-noBg.png"
-                  alt="Mzedu SACCO Logo"
-                  width={100}
-                  height={100}
+                  alt="Mwanda Mzedu SACCO Logo"
+                  width={80}
+                  height={80}
                   className="mx-auto absolute top-4 left-4"
                 />
       {/* <div className="absolute inset-0 bg-black/20"></div> */}

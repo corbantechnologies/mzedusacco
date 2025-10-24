@@ -20,7 +20,7 @@ function MemberNavbar() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center">
             <h1 className="ml-2 text-xl md:text-2xl font-bold">
-              Mzedu SACCO
+              Mwanda Mzedu SACCO
             </h1>
           </Link>
           <nav className="hidden md:flex gap-6 items-center">

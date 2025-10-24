@@ -1,1 +1,1 @@
-# Mzedu SACCO
+# Mwanda Mzedu SACCO

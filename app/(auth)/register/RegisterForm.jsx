@@ -26,13 +26,13 @@ function RegisterForm() {
           <div className="flex justify-center mb-4">
             <Image
               src="/auth-image-noBg-2.png"
-              alt="Mzedu SACCO Logo"
+              alt="Mwanda Mzedu SACCO Logo"
               width={200}
               height={200}
               className="mx-auto"
             />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Mzedu SACCO</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Mwanda Mzedu SACCO</h1>
           <p className="text-lg text-gray-500">The SACCO for everyone</p>
         </div>
 
