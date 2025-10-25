@@ -5,8 +5,7 @@ import MemberLoadingSpinner from "@/components/general/MemberLoadingSpinner";
 import InfoCard from "@/components/member/InfoCard";
 import StatsCard from "@/components/member/StatsCard";
 import SavingsTable from "@/components/savings/SavingsTable";
-import { Button } from "@/components/ui/button";
-import CreateSavingsAccount from "@/forms/savings/CreateSavingsAccount";
+
 import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
 import { useFetchMember } from "@/hooks/members/actions";
 import { useFetchSavings } from "@/hooks/savings/actions";
@@ -65,7 +64,7 @@ function MemberDashboard() {
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#045e32]">
               Hello, {member?.salutation} {member?.last_name}
             </h1>
             <p className="text-gray-500 mt-1">Welcome to your dashboard</p>
@@ -100,12 +99,16 @@ function MemberDashboard() {
 
         {/* Loans Table */}
         <div className="space-y-4">
-          <LoansTable loans={loans} isLoading={isLoadingLoans} />
+          <LoansTable loans={loans} isLoading={isLoadingLoans} route="member" />
         </div>
 
         {/* Ventures Table */}
         <div className="space-y-4">
-          <VenturesTable ventures={ventures} isLoading={isLoadingVentures} route="member" />
+          <VenturesTable
+            ventures={ventures}
+            isLoading={isLoadingVentures}
+            route="member"
+          />
         </div>
       </div>
     </div>

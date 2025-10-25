@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import Link from "next/link";
 
-function LoansTable({ loans, isLoading }) {
+function LoansTable({ loans, isLoading, route }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [filterType, setFilterType] = useState("All");
   const itemsPerPage = 5;
@@ -80,7 +81,7 @@ function LoansTable({ loans, isLoading }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl text-primary">My Loans</CardTitle>
+          <CardTitle className="text-xl text-[#045e32]">My Loans</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center text-gray-700">No loans found.</div>
@@ -92,7 +93,7 @@ function LoansTable({ loans, isLoading }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl text-primary">My Loans</CardTitle>
+        <CardTitle className="text-xl text-[#045e32]">My Loans</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -113,7 +114,7 @@ function LoansTable({ loans, isLoading }) {
             >
               <SelectTrigger
                 id="loan-type-filter"
-                className="w-[200px] border-gray-300 focus:ring-primary focus:border-primary"
+                className="w-[200px] border-gray-300 focus:ring-[#045e32] focus:border-[#045e32]"
                 aria-label="Filter by loan type"
               >
                 <SelectValue placeholder="Select loan type" />
@@ -132,7 +133,7 @@ function LoansTable({ loans, isLoading }) {
           <div className="bg-white shadow-md rounded-lg overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="bg-primary hover:bg-primary">
+                <TableRow className="bg-[#045e32] hover:bg-[#045e32]">
                   <TableHead className="text-white font-semibold text-base">
                     Loan Type
                   </TableHead>
@@ -148,12 +149,8 @@ function LoansTable({ loans, isLoading }) {
                   <TableHead className="text-white font-semibold text-base">
                     Status
                   </TableHead>
-                  {/* TODO: sort this out */}
-                  {/* <TableHead className="text-white font-semibold text-base">
-                    Approved By
-                  </TableHead> */}
                   <TableHead className="text-white font-semibold text-base">
-                    Approval Date
+                    Action
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -184,13 +181,13 @@ function LoansTable({ loans, isLoading }) {
                         {getStatus(loan)}
                       </span>
                     </TableCell>
-                    {/* <TableCell className="text-sm text-gray-700">
-                      {loan.approved_by}
-                    </TableCell> */}
                     <TableCell className="text-sm text-gray-700">
-                      {loan.approval_date
-                        ? format(new Date(loan.approval_date), "MM/dd/yyyy")
-                        : "N/A"}
+                      <Link
+                        href={`/${route}/loans/${loan.identity}`}
+                        className="text-[#045e32] hover:underline cursor-pointer"
+                      >
+                        View
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -209,7 +206,7 @@ function LoansTable({ loans, isLoading }) {
               <Button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="bg-primary hover:bg-[#067a46] text-white text-sm disabled:opacity-50"
+                className="bg-[#045e32] hover:bg-[#067a46] text-white text-sm disabled:opacity-50"
                 aria-label="Previous page"
               >
                 Previous
@@ -222,8 +219,8 @@ function LoansTable({ loans, isLoading }) {
                     variant={currentPage === page ? "default" : "outline"}
                     className={`${
                       currentPage === page
-                        ? "bg-primary text-white"
-                        : "border-primary text-primary hover:bg-primary hover:text-white"
+                        ? "bg-[#045e32] text-white"
+                        : "border-[#045e32] text-[#045e32] hover:bg-[#045e32] hover:text-white"
                     } text-sm`}
                     aria-label={`Go to page ${page}`}
                   >
@@ -234,7 +231,7 @@ function LoansTable({ loans, isLoading }) {
               <Button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="bg-primary hover:bg-[#067a46] text-white text-sm disabled:opacity-50"
+                className="bg-[#045e32] hover:bg-[#067a46] text-white text-sm disabled:opacity-50"
                 aria-label="Next page"
               >
                 Next
