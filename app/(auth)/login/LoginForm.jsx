@@ -1,6 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
@@ -50,79 +57,81 @@ function LoginForm() {
   };
 
   return (
-    <div>
-      <Image
-        src="/auth-image-noBg-2.png"
-        alt="Mwanda Mzedu SACCO Logo"
-        width={200}
-        height={200}
-        className="mx-auto"
-      />
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-black">Mwanda Mzedu SACCO</h1>
-        <p className="text-gray-500">The SACCO for everyone</p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Member Number */}
-        <div className="space-y-2">
-          <Label htmlFor="member_no" className="text-black">
-            Member Number
-          </Label>
-          <Input
-            type="text"
-            id="member_no"
-            placeholder="Enter your member number"
-            className="border"
-            value={member_no}
-            onChange={(e) => setMemberNo(e.target.value)}
-          />
-        </div>
-
-        {/* Password */}
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-black">
-            Password
-          </Label>
-          <div className="relative">
+    <Card className="w-full max-w-md mx-auto shadow-lg border-0 bg-white/95 backdrop-blur-sm">
+      <CardHeader className="space-y-1 items-center text-center pb-2">
+        <Image
+          src="/auth-image-noBg-2.png"
+          alt="Mwanda Mzedu SACCO Logo"
+          width={180}
+          height={180}
+          className="mx-auto"
+        />
+        <CardTitle className="text-2xl font-bold tracking-tight text-primary">
+          Mwanda Mzedu SACCO
+        </CardTitle>
+        <CardDescription className="text-muted-foreground">
+          The SACCO for everyone
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="member_no">Member Number</Label>
             <Input
-              type={showPassword ? "text" : "password"}
-              id="password"
-              placeholder="Password"
-              className="border"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              type="text"
+              id="member_no"
+              placeholder="Enter your member number"
+              className="h-10"
+              value={member_no}
+              onChange={(e) => setMemberNo(e.target.value)}
+              required
             />
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 transform -translate-y-1/2"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? (
-                <EyeOff className="w-5 h-5 text-gray-500" />
-              ) : (
-                <Eye className="w-5 h-5 text-gray-500" />
-              )}
-            </button>
           </div>
-        </div>
 
-        {/* TODO: Add forgot password link */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <a
+                href="/forgot-password"
+                className="text-xs text-primary hover:underline font-medium"
+              >
+                Forgot Password?
+              </a>
+            </div>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                placeholder="Enter your password"
+                className="h-10 pr-10"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
 
-        {/* Login Button */}
-        <Button type="submit" className="w-full text-white" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </Button>
-
-        {/* Register Link */}
-        <p className="text-center">
-          Don&apos;t have an account?{" "}
-          <a href="/register" className="text-primary hover:underline">
-            Register now
-          </a>
-        </p>
-      </form>
-    </div>
+          <Button
+            type="submit"
+            className="w-full h-10 text-base font-semibold transition-all"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 
