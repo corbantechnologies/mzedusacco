@@ -161,24 +161,6 @@ function CreateMember({ closeModal, openModal }) {
                   </Field>
                 </div>
 
-                {values.employment_type !== "Self-Employed" &&
-                  values.employment_type !== "Not Employed" && (
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="member_no"
-                        className="text-base text-black font-medium"
-                      >
-                        Member Number
-                      </Label>
-                      <Field
-                        as={Input}
-                        type="text"
-                        name="member_no"
-                        id="member_no"
-                        className="border-black   rounded-md text-base py-2"
-                      />
-                    </div>
-                  )}
 
                 <div className="space-y-2">
                   <Label
