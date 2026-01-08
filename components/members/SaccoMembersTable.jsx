@@ -161,7 +161,7 @@ function SaccoMembersTable({ members }) {
                               `/sacco-admin/members/${member?.member_no}`
                             );
                           }}
-                          className="bg-[#cc5500] hover:bg-[#e66b00] text-white"
+                          className="bg-[#ea1315] hover:bg-[#c71012] text-white"
                         >
                           Manage
                         </Button>
@@ -198,7 +198,7 @@ function SaccoMembersTable({ members }) {
                       onClick={() => handlePageChange(page)}
                       className={
                         currentPage === page
-                          ? "bg-[#cc5500] text-white hover:bg-[#e66b00]"
+                          ? "bg-[#ea1315] text-white hover:bg-[#c71012]"
                           : "border-black text-black hover:bg-gray-100"
                       }
                     >

@@ -1,14 +1,14 @@
 "use client";
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
-import LoanTypesTable from "@/components/loantypes/LoanTypesTable";
+import LoanTypesTable from "@/components/loanproducts/LoanTypesTable";
 import SaccoMembersTable from "@/components/members/SaccoMembersTable";
 import AdminInfoCard from "@/components/saccoadmin/AdminInfoCard";
 import StatsCard from "@/components/saccoadmin/StatsCard";
-import SavingsTypesTable from "@/components/savingstypes/SavingsTypesTable";
+import SavingsTypesTable from "@/components/savingtypes/SavingTypesTable";
 import { Button } from "@/components/ui/button";
 import VentureTypesTable from "@/components/venturetypes/VentureTypesTable";
-import CreateLoanType from "@/forms/loantypes/CreateLoanType";
+import CreateLoanProduct from "@/forms/loanproducts/CreateLoanProduct";
 import CreateMember from "@/forms/members/CreateMember";
 import CreateSavingType from "@/forms/savingtypes/CreateSavingType";
 import CreateVentureType from "@/forms/venturetypes/CreateVentureType";
@@ -112,7 +112,7 @@ function SaccoAdminDashboard() {
             </Button>
             <Button
               onClick={() => setSavingTypeModal(true)}
-              className="bg-[#cc5500] hover:bg-[#e66b00] text-white text-sm sm:text-base py-2 px-3 sm:px-4 flex-1 sm:flex-none"
+              className="bg-[#ea1315] hover:bg-[#c71012] text-white text-sm sm:text-base py-2 px-3 sm:px-4 flex-1 sm:flex-none"
             >
               <Wallet2 className="h-4 w-4 mr-2" /> Saving Type
             </Button>
@@ -124,7 +124,7 @@ function SaccoAdminDashboard() {
             </Button>
             <Button
               onClick={() => setVentureTypeModal(true)}
-              className="bg-[#cc5500] hover:bg-[#e66b00] text-white text-sm sm:text-base py-2 px-3 sm:px-4 flex-1 sm:flex-none"
+              className="bg-[#ea1315] hover:bg-[#c71012] text-white text-sm sm:text-base py-2 px-3 sm:px-4 flex-1 sm:flex-none"
             >
               <ShoppingCart className="h-4 w-4 mr-2" /> Venture Type
             </Button>
@@ -188,7 +188,7 @@ function SaccoAdminDashboard() {
           closeModal={() => setMemberCreateModal(false)}
         />
 
-        <CreateLoanType
+        <CreateLoanProduct
           isOpen={loanTypeModal}
           onClose={() => setLoanTypeModal(false)}
           refetchLoanTypes={refetchLoanTypes}

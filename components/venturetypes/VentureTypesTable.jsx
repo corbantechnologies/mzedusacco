@@ -83,7 +83,7 @@ function VentureTypesTable({ ventureTypes }) {
         <div className="rounded-lg shadow-md overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-[#cc5500] hover:bg-[#cc5500]">
+              <TableRow className="bg-[#ea1315] hover:bg-[#ea1315]">
                 <TableHead className="text-white font-semibold text-base">
                   Name
                 </TableHead>
@@ -122,7 +122,7 @@ function VentureTypesTable({ ventureTypes }) {
               <Button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="bg-[#cc5500] hover:bg-[#e66b00] text-white text-sm disabled:opacity-50"
+                className="bg-[#ea1315] hover:bg-[#c71012] text-white text-sm disabled:opacity-50"
                 aria-label="Previous page"
               >
                 Previous
@@ -133,11 +133,10 @@ function VentureTypesTable({ ventureTypes }) {
                     key={page}
                     onClick={() => handlePageChange(page)}
                     variant={currentPage === page ? "default" : "outline"}
-                    className={`${
-                      currentPage === page
-                        ? "bg-[#cc5500] text-white"
-                        : "border-[#cc5500]  hover:bg-[#cc5500] hover:text-white"
-                    } text-sm`}
+                    className={`${currentPage === page
+                        ? "bg-[#ea1315] text-white"
+                        : "border-[#ea1315]  hover:bg-[#ea1315] hover:text-white"
+                      } text-sm`}
                     aria-label={`Go to page ${page}`}
                   >
                     {page}
@@ -147,7 +146,7 @@ function VentureTypesTable({ ventureTypes }) {
               <Button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="bg-[#cc5500] hover:bg-[#e66b00] text-white text-sm disabled:opacity-50"
+                className="bg-[#ea1315] hover:bg-[#c71012] text-white text-sm disabled:opacity-50"
                 aria-label="Next page"
               >
                 Next

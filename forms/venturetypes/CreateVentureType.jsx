@@ -98,7 +98,7 @@ function CreateVentureType({ isOpen, onClose, refetchVentureTypes }) {
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-[#cc5500] hover:bg-[#e66b00] text-white"
+                  className="bg-[#ea1315] hover:bg-[#c71012] text-white"
                   disabled={loading}
                 >
                   {loading ? "Creating..." : "Create"}

@@ -39,7 +39,7 @@ function BulkTamarindLoanInterestUpload({
       refetchTransactions();
       onClose();
     } catch (error) {
-        console.log(error)
+      console.log(error)
       toast.error("Failed to upload bulk loan interest. Please try again.");
     } finally {
       setLoading(false);
@@ -50,7 +50,7 @@ function BulkTamarindLoanInterestUpload({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-[#cc5500]">
+          <DialogTitle className="text-[#ea1315]">
             Bulk Loan Interest Upload
           </DialogTitle>
         </DialogHeader>

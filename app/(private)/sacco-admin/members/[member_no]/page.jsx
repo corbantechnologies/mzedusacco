@@ -90,9 +90,8 @@ function MemberDetail() {
   };
 
   const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ""}${
-      lastName?.charAt(0) || ""
-    }`.toUpperCase();
+    return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""
+      }`.toUpperCase();
   };
 
   const InfoField = ({ icon: Icon, label, value }) => (
@@ -178,11 +177,10 @@ function MemberDetail() {
                 <div className="flex flex-wrap gap-3">
                   <Badge
                     variant={member?.is_approved ? "default" : "secondary"}
-                    className={`${
-                      member?.is_approved
+                    className={`${member?.is_approved
                         ? "bg-success text-success-foreground hover:bg-success/90"
                         : "bg-warning text-warning-foreground hover:bg-warning/90"
-                    } px-3 py-1 text-sm font-semibold`}
+                      } px-3 py-1 text-sm font-semibold`}
                   >
                     {member?.is_approved ? (
                       <CheckCircle className="h-4 w-4 mr-1" />
@@ -194,11 +192,10 @@ function MemberDetail() {
 
                   <Badge
                     variant={member?.is_active ? "default" : "secondary"}
-                    className={`${
-                      member?.is_active
+                    className={`${member?.is_active
                         ? "bg-success text-success-foreground hover:bg-success/90"
                         : "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    } px-3 py-1 text-sm font-semibold`}
+                      } px-3 py-1 text-sm font-semibold`}
                   >
                     {member?.is_active ? "Active" : "Inactive"}
                   </Badge>
@@ -249,9 +246,8 @@ function MemberDetail() {
                         <InfoField
                           icon={Wallet2}
                           label={`${account?.account_type} - ${account?.account_number}`}
-                          value={`${account?.balance} ${
-                            account?.currency || "KES"
-                          }`}
+                          value={`${account?.balance} ${account?.currency || "KES"
+                            }`}
                         />
                       </div>
                     ))}
@@ -286,7 +282,7 @@ function MemberDetail() {
                       <Button
                         onClick={() => setVenturePaymentModal(true)}
                         size="sm"
-                        className="bg-[#cc5500] hover:bg-[#e66b00] text-white mt-4"
+                        className="bg-[#ea1315] hover:bg-[#c71012] text-white mt-4"
                       >
                         Pay
                       </Button>

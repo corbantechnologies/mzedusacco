@@ -12,7 +12,7 @@ function SaccoAdminNavbar() {
   return (
     <>
       {/* Navbar */}
-      <header className="bg-[#cc5500] text-white sticky top-0 z-50">
+      <header className="bg-[#ea1315] text-white sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl md:text-2xl font-bold">Mwanda Mzedu SACCO</h1>
           <nav className="hidden md:flex gap-6 items-center">
@@ -73,9 +73,8 @@ function SaccoAdminNavbar() {
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed inset-y-0 right-0 z-50 w-[200px] sm:w-[300px] bg-white text-black transform ${
-          isMenuOpen ? "translate-x-0" : "translate-x-full"
-        } transition-transform duration-300 ease-in-out md:hidden border-l border-[#cc5500] shadow-lg`}
+        className={`fixed inset-y-0 right-0 z-50 w-[200px] sm:w-[300px] bg-white text-black transform ${isMenuOpen ? "translate-x-0" : "translate-x-full"
+          } transition-transform duration-300 ease-in-out md:hidden border-l border-[#ea1315] shadow-lg`}
       >
         <div className="flex flex-col h-full">
           <div className="p-4 flex justify-between items-center">

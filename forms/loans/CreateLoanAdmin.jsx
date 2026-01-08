@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Field, Form, Formik } from "formik";
 import toast from "react-hot-toast";
-import { adminCreateLoanForMember } from "@/services/loans";
+import { adminCreateLoanForMember } from "@/services/loanaccounts";
 
 function CreateLoanAccountAdmin({
   isOpen,
@@ -103,7 +103,7 @@ function CreateLoanAccountAdmin({
               <DialogFooter>
                 <Button
                   type="submit"
-                  className="bg-[#cc5500] text-white hover:bg-[#cc5500] disabled:opacity-50"
+                  className="bg-[#ea1315] text-white hover:bg-[#ea1315] disabled:opacity-50"
                   disabled={loading}
                 >
                   {loading ? "Creating..." : "Create Loan"}
