@@ -41,7 +41,6 @@ export default function ForgotPassword() {
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
             <Card className="w-full max-w-md mx-auto shadow-2xl border-white/20 bg-white/70 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 relative z-10">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent"></div>
                 <CardHeader className="space-y-1 items-center text-center pb-2">
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary mx-auto">
                         <LockKeyhole className="w-8 h-8" />
