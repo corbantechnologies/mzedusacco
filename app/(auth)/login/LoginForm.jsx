@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Lock, User } from "lucide-react";
 import { getSession, signIn } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useState, useTransition } from "react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 
 function LoginForm() {
@@ -57,81 +57,99 @@ function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg border-0 bg-white/95 backdrop-blur-sm">
-      <CardHeader className="space-y-1 items-center text-center pb-2">
-        <Image
-          src="/auth-image-noBg-2.png"
-          alt="Mwanda Mzedu SACCO Logo"
-          width={180}
-          height={180}
-          className="mx-auto"
-        />
-        <CardTitle className="text-2xl font-bold tracking-tight text-primary">
-          Mwanda Mzedu SACCO
-        </CardTitle>
-        <CardDescription className="text-muted-foreground">
-          The SACCO for everyone
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="member_no">Member Number</Label>
-            <Input
-              type="text"
-              id="member_no"
-              placeholder="Enter your member number"
-              className="h-10"
-              value={member_no}
-              onChange={(e) => setMemberNo(e.target.value)}
-              required
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+      {/* Background blobs */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
+
+      <Card className="w-full max-w-md mx-auto shadow-2xl border-white/20 bg-white/70 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 relative z-10 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent"></div>
+        <CardHeader className="space-y-2 items-center text-center pb-6">
+          <div className="w-20 h-20 relative mb-2">
+            <Image
+              src="/mzeduLogo-noBg.png"
+              alt="Mwanda Mzedu SACCO Logo"
+              fill
+              className="object-contain"
             />
           </div>
+          <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
+            Welcome Back
+          </CardTitle>
+          <CardDescription className="text-gray-500 text-base">
+            Sign in to access your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="member_no" className="text-sm font-medium text-gray-700">Member Number</Label>
+              <div className="relative group">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 group-focus-within:text-primary transition-colors" />
+                <Input
+                  type="text"
+                  id="member_no"
+                  placeholder="Enter your member number"
+                  className="h-11 pl-10 border-gray-200 focus:border-primary focus:ring-primary/20 transition-all bg-white/50"
+                  value={member_no}
+                  onChange={(e) => setMemberNo(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <a
-                href="/forgot-password"
-                className="text-xs text-primary hover:underline font-medium"
-              >
-                Forgot Password?
-              </a>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
+                <a
+                  href="/forgot-password"
+                  className="text-xs text-primary hover:text-accent font-semibold hover:underline transition-colors"
+                >
+                  Forgot Password?
+                </a>
+              </div>
+              <div className="relative group">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 group-focus-within:text-primary transition-colors" />
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  placeholder="Enter your password"
+                  className="h-11 pl-10 pr-10 border-gray-200 focus:border-primary focus:ring-primary/20 transition-all bg-white/50"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
-            <div className="relative">
-              <Input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                placeholder="Enter your password"
-                className="h-10 pr-10"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-11 text-base font-bold bg-gradient-to-r from-primary to-[#045e32] hover:bg-gradient-to-l hover:from-primary hover:to-[#045e32] shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+              disabled={loading}
+            >
+              {loading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
+
+          <div className="text-center pt-2">
+            <p className="text-xs text-gray-400">
+              Secure Access • Mwanda Mzedu SACCO
+            </p>
           </div>
-
-          <Button
-            type="submit"
-            className="w-full h-10 text-base font-semibold transition-all"
-            disabled={loading}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
