@@ -13,7 +13,7 @@ function SaccoAdminNavbar() {
     <>
       {/* Navbar */}
       <header className="bg-[#ea1315] text-white sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl md:text-2xl font-bold">Mwanda Mzedu SACCO</h1>
           <nav className="hidden md:flex gap-6 items-center">
             <Link
