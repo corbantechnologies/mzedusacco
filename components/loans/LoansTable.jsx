@@ -157,7 +157,7 @@ function LoansTable({ loans, isLoading, route }) {
               <TableBody>
                 {paginatedLoans?.map((loan) => (
                   <TableRow
-                    key={loan.identity}
+                    key={loan.reference}
                     className="border-b border-gray-200"
                   >
                     <TableCell className="text-sm text-gray-700">

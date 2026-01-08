@@ -15,10 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, Form, Formik } from "formik";
-import { createLoanType } from "@/services/loantypes";
+import { createLoanProduct } from "@/services/loanproducts";
 import toast from "react-hot-toast";
 
-function CreateLoanType({ isOpen, onClose, refetchLoanTypes }) {
+function CreateLoanProduct({ isOpen, onClose, refetchLoanTypes }) {
   const [loading, setLoading] = useTransition();
   const token = useAxiosAuth();
 
@@ -39,7 +39,7 @@ function CreateLoanType({ isOpen, onClose, refetchLoanTypes }) {
           onSubmit={async (values) => {
             try {
               setLoading(async () => {
-                await createLoanType(values, token);
+                await createLoanProduct(values, token);
                 toast?.success("Saving type created successfully!");
                 onClose();
                 refetchLoanTypes();
@@ -100,7 +100,7 @@ function CreateLoanType({ isOpen, onClose, refetchLoanTypes }) {
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-[#cc5500] hover:bg-[#e66b00] text-white"
+                  className="bg-[#ea1315] hover:bg-[#c71012] text-white"
                   disabled={loading}
                 >
                   {loading ? "Creating..." : "Create"}
@@ -114,4 +114,4 @@ function CreateLoanType({ isOpen, onClose, refetchLoanTypes }) {
   );
 }
 
-export default CreateLoanType;
+export default CreateLoanProduct;

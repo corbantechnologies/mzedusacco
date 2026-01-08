@@ -152,11 +152,10 @@ function VenturesTable({ ventures, isLoading, route }) {
                     </TableCell>
                     <TableCell className="text-sm">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          venture.is_active
+                        className={`px-2 py-1 rounded-full text-xs ${venture.is_active
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
-                        }`}
+                          }`}
                       >
                         {venture.is_active ? "Active" : "Inactive"}
                       </span>
@@ -186,7 +185,7 @@ function VenturesTable({ ventures, isLoading, route }) {
               <Button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="bg-[#067a46] hover:bg-[#e66b00] text-white text-sm disabled:opacity-50"
+                className="bg-[#067a46] hover:bg-[#c71012] text-white text-sm disabled:opacity-50"
                 aria-label="Previous page"
               >
                 Previous
@@ -197,11 +196,10 @@ function VenturesTable({ ventures, isLoading, route }) {
                     key={page}
                     onClick={() => handlePageChange(page)}
                     variant={currentPage === page ? "default" : "outline"}
-                    className={`${
-                      currentPage === page
+                    className={`${currentPage === page
                         ? "bg-[#067a46] text-white"
                         : "border-[#067a46] text-[#067a46] hover:bg-[#067a46] hover:text-white"
-                    } text-sm`}
+                      } text-sm`}
                     aria-label={`Go to page ${page}`}
                   >
                     {page}
@@ -211,7 +209,7 @@ function VenturesTable({ ventures, isLoading, route }) {
               <Button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="bg-[#067a46] hover:bg-[#e66b00] text-white text-sm disabled:opacity-50"
+                className="bg-[#067a46] hover:bg-[#c71012] text-white text-sm disabled:opacity-50"
                 aria-label="Next page"
               >
                 Next

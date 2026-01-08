@@ -5,54 +5,76 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Home, ArrowRight } from "lucide-react";
 
 function SuccessPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary via-green-600 to-[#78e08f] relative overflow-hidden">
-      <div className="absolute inset-0 bg-black/20"></div>
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-8">
-        <Card className="w-full max-w-2xl bg-white/95 backdrop-blur-sm shadow-2xl border-0">
-          <CardContent className="p-8">
-            <div className="text-center mb-8">
-              <div className="flex justify-center mb-4">
-                <Image
-                  src="/logoNoBg.png"
-                  width={96}
-                  height={96}
-                  alt="Mwanda Mzedu SACCO Logo"
-                  className="w-24 h-24 rounded-full shadow-2xl"
-                />
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-primary mb-2">
-                Mwanda Mzedu SACCO
-              </h1>
-              <p className="text-lg text-gray-500">The SACCO for everyone</p>
-            </div>
-            <div className="flex flex-col items-center space-y-6">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+
+      <Card className="w-full max-w-lg bg-white/70 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 shadow-2xl border-white/20 relative z-10 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-primary"></div>
+        <CardContent className="p-8 sm:p-10">
+          <div className="flex flex-col items-center text-center space-y-6">
+
+            <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center mb-2 animate-in fade-in zoom-in duration-500">
               <CheckCircle2
-                className="w-12 h-12 text-primary"
+                className="w-16 h-16 text-green-500"
                 aria-hidden="true"
               />
-              <h2 className="text-2xl font-bold text-primary">
-                Application Received
-              </h2>
-              <p className="text-base sm:text-lg text-gray-700 text-center">
-                Your application has been received and is being reviewed. You
-                will receive an email upon approval.
+            </div>
+
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+                Application Received!
+              </h1>
+              <p className="text-gray-500 text-lg leading-relaxed max-w-[90%] mx-auto">
+                Your application has been received and is currently being reviewed by our team.
               </p>
+            </div>
+
+            <div className="bg-green-50/50 rounded-xl p-4 w-full border border-green-100">
+              <p className="text-green-800 text-sm font-medium">
+                You will receive an email notification once your account has been approved.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 w-full pt-4">
               <Button
                 asChild
-                className="w-full sm:w-auto h-12 text-lg font-semibold bg-primary hover:bg-[#067a46] text-white transition-colors"
+                variant="outline"
+                className="w-full h-12 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:text-primary transition-colors"
               >
                 <Link href="/" aria-label="Return to home page">
+                  <Home className="w-4 h-4 mr-2" />
                   Back to Home
                 </Link>
               </Button>
+              <Button
+                asChild
+                className="w-full h-12 text-base font-bold bg-primary hover:bg-[#045e32] shadow-lg shadow-primary/20 transition-all"
+              >
+                <Link href="/login" aria-label="Go to login">
+                  Login Page
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+
+            <div className="pt-6 border-t border-gray-100 w-full">
+              <div className="flex justify-center items-center gap-2 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                <Image
+                  src="/mzeduLogo-noBg.png"
+                  width={40}
+                  height={40}
+                  alt="Mwanda Mzedu SACCO Logo"
+                  className="object-contain"
+                />
+                <span className="font-semibold text-sm text-gray-400">Mwanda Mzedu SACCO</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { getLoanTypeDetail, getLoanTypes } from "@/services/loantypes";
+import { getLoanProductDetail, getLoanProducts } from "@/services/loanproducts";
 import useAxiosAuth from "../authentication/useAxiosAuth";
 import { useQuery } from "@tanstack/react-query";
 
@@ -9,7 +9,7 @@ export function useFetchLoanTypes() {
 
   return useQuery({
     queryKey: ["loanTypes"],
-    queryFn: () => getLoanTypes(token),
+    queryFn: () => getLoanProducts(token),
   });
 }
 
@@ -18,6 +18,6 @@ export function useFetchLoanTypeDetail(reference) {
 
   return useQuery({
     queryKey: ["loanType", reference],
-    queryFn: () => getLoanTypeDetail(reference, token),
+    queryFn: () => getLoanProductDetail(reference, token),
   });
 }

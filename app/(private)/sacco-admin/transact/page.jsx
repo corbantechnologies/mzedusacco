@@ -68,7 +68,7 @@ function Transactions() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6 space-y-8">
+      <div className="mx-auto p-6 space-y-8">
         {/* Breadcrumbs */}
         <Breadcrumb>
           <BreadcrumbList>
@@ -89,7 +89,7 @@ function Transactions() {
         {/* Headers */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#cc5500]">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#ea1315]">
               Accounts & Transactions
             </h1>
             <p className="text-gray-500 mt-1">
