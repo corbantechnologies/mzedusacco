@@ -35,11 +35,9 @@ function CreateLoanAccountAdmin({
 
         <Formik
           initialValues={{
-            loan_type: loanTypes?.name || "",
-            member_no: member?.member_no || "",
-            loan_amount: 0,
-            is_active: true,
-            is_approved: true,
+            product: loanTypes?.name || "",
+            member: member?.member_no || "",
+            principal: 0,
           }}
           onSubmit={async (values) => {
             setLoading(true);
@@ -51,6 +49,7 @@ function CreateLoanAccountAdmin({
               refetchMember();
             } catch (error) {
               toast?.error("Failed to create loan!");
+              console.log(error);
             } finally {
               setLoading(false);
             }
@@ -59,13 +58,13 @@ function CreateLoanAccountAdmin({
           {({ values }) => (
             <Form className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="member_no" className="text-black">
+                <Label htmlFor="member" className="text-black">
                   Member
                 </Label>
                 <Field
                   as={Input}
                   type="text"
-                  name="member_no"
+                  name="member"
                   placeholder={`${member?.member_no}`}
                   value={`${member?.member_no}`}
                   disabled
@@ -73,12 +72,12 @@ function CreateLoanAccountAdmin({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="loan_type" className="text-black">
+                <Label htmlFor="product" className="text-black">
                   Loan Type
                 </Label>
                 <Field
                   as="select"
-                  name="loan_type"
+                  name="product"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="" label="Select loan type" />
@@ -89,14 +88,15 @@ function CreateLoanAccountAdmin({
                   ))}
                 </Field>
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="loan_amount" className="text-black">
+                <Label htmlFor="principal" className="text-black">
                   Loan Amount
                 </Label>
                 <Field
                   as={Input}
                   type="number"
-                  name="loan_amount"
+                  name="principal"
                   className="w-full border border-black rounded-md px-3 py-2 text-base focus:ring-2   transition-colors"
                 />
               </div>

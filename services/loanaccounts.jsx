@@ -19,10 +19,5 @@ export const getLoan = async (identity, token) => {
 
 // Admin creates a loan for a member
 export const adminCreateLoanForMember = async (values, token) => {
-  const response = await apiActions?.post(
-    `/api/v1/loanaccounts/create/loan/`,
-    values,
-    token
-  );
-  return response?.data;
+  await apiActions?.post(`/api/v1/loanaccounts/`, values, token);
 };

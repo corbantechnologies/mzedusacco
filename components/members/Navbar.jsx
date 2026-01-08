@@ -17,7 +17,7 @@ function MemberNavbar() {
         className="bg-primary text-white sticky top-0 z-50"
         aria-label="Main navigation"
       >
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center">
             <h1 className="ml-2 text-xl md:text-2xl font-bold">
               Mwanda Mzedu SACCO

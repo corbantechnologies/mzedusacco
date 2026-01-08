@@ -424,7 +424,7 @@ const AccountsListTable = ({ accountsList }) => {
                       })}
 
                       {/* Expand Button */}
-                      {visibleLoanTypes.length > 0 && (
+                      {/* {visibleLoanTypes.length > 0 && (
                         <TableCell>
                           {hasLoans && (
                             <Button
@@ -436,7 +436,7 @@ const AccountsListTable = ({ accountsList }) => {
                             </Button>
                           )}
                         </TableCell>
-                      )}
+                      )} */}
                     </TableRow>
 
                     {/* Expanded Loan Details */}
