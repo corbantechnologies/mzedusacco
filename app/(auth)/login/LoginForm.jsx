@@ -59,6 +59,7 @@ function LoginForm() {
   return (
 
       <Card className="w-full max-w-md mx-auto shadow-2xl border-white/20 bg-white/70 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 relative z-10 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent"></div>
         <CardHeader className="space-y-2 items-center text-center pb-6">
           <div className="w-20 h-20 relative mb-2 mx-auto">
             <Image
