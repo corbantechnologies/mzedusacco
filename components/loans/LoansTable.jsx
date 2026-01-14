@@ -11,13 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import Link from "next/link";
@@ -105,28 +99,22 @@ function LoansTable({ loans, isLoading, route }) {
             >
               Filter by Loan Type
             </Label>
-            <Select
+            <select
+              id="loan-type-filter"
               value={filterType}
-              onValueChange={(value) => {
-                setFilterType(value);
+              onChange={(e) => {
+                setFilterType(e.target.value);
                 setCurrentPage(1); // Reset to first page on filter change
               }}
+              className="w-[200px] h-10 px-3 py-2 rounded-md border border-gray-300 bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#045e32] focus:border-transparent"
+              aria-label="Filter by loan type"
             >
-              <SelectTrigger
-                id="loan-type-filter"
-                className="w-[200px] border-gray-300 focus:ring-[#045e32] focus:border-[#045e32]"
-                aria-label="Filter by loan type"
-              >
-                <SelectValue placeholder="Select loan type" />
-              </SelectTrigger>
-              <SelectContent>
-                {loanTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {loanTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Table */}

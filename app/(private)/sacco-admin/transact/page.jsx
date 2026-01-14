@@ -127,53 +127,53 @@ function Transactions() {
                     <Download className="mr-2 h-4 w-4" />
                     Download Interest Transactions
                   </Button> */}
-                  <Button
+                  {/* <Button
                     onClick={() => setIsSavingsUploadDialogOpen(true)}
                     variant="ghost"
                     className="justify-start text-left"
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     Savings Deposit Upload
-                  </Button>
-                  <Button
+                  </Button> */}
+                  {/* <Button
                     onClick={() => setIsVentureUploadDialogOpen(true)}
                     variant="ghost"
                     className="justify-start text-left"
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     Venture Deposit Upload
-                  </Button>
-                  <Button
+                  </Button> */}
+                  {/* <Button
                     onClick={() => setIsVenturePaymentUploadDialogOpen(true)}
                     variant="ghost"
                     className="justify-start text-left"
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     Venture Payment Upload
-                  </Button>
-                  <Button
+                  </Button> */}
+                  {/* <Button
                     onClick={() => setIsLoanRepaymentUploadDialogOpen(true)}
                     variant="ghost"
                     className="justify-start text-left"
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     Bulk Loan Repayments Upload
-                  </Button>
-                  <Button
+                  </Button> */}
+                  {/* <Button
                     onClick={() => setIsLoanInterestUploadDialogOpen(true)}
                     variant="ghost"
                     className="justify-start text-left"
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     Bulk Loan Interest Upload
-                  </Button>
+                  </Button> */}
                   <Button
                     onClick={() => setIsCombinedUploadDialogOpen(true)}
                     variant="ghost"
                     className="justify-start text-left"
                   >
                     <Upload className="mr-2 h-4 w-4" />
-                    Bulk Combined Upload
+                    Upload - Savings & Ventures
                   </Button>
                 </div>
               </PopoverContent>
