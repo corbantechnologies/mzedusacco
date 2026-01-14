@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -41,6 +41,8 @@ const AccountsListTable = ({ accountsList }) => {
   const [openVentures, setOpenVentures] = useState(false);
   const [openLoans, setOpenLoans] = useState(false);
   const [expandedRows, setExpandedRows] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const data = accountsList?.results || accountsList || [];
 
@@ -169,6 +171,26 @@ const AccountsListTable = ({ accountsList }) => {
     setSelectedVentureTypes([]);
     setSelectedLoanTypes([]);
     setExpandedRows({});
+    setCurrentPage(1);
+  };
+
+  // Pagination logic
+  const totalItems = filteredAccounts.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const paginatedAccounts = filteredAccounts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset page on filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedSavingsTypes, selectedVentureTypes, selectedLoanTypes]);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   // Calculate total columns for colspan
@@ -380,7 +402,7 @@ const AccountsListTable = ({ accountsList }) => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredAccounts.map((user) => {
+              paginatedAccounts.map((user) => {
                 const hasLoans = user.loan_accounts.length > 0;
                 const isExpanded = expandedRows[user.member_no];
 
@@ -477,6 +499,66 @@ const AccountsListTable = ({ accountsList }) => {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-muted-foreground">
+            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+            {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}{" "}
+            entries
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="bg-[#ea1315] hover:bg-[#c71012] text-white border-none"
+            >
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum = currentPage;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <Button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    className={`${currentPage === pageNum
+                        ? "bg-[#ea1315] text-white"
+                        : "border-[#ea1315] text-[#ea1315] hover:bg-[#ea1315] hover:text-white"
+                      } h-8 w-8 p-0`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="bg-[#ea1315] hover:bg-[#c71012] text-white border-none"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
