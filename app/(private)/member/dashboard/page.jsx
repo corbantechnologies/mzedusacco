@@ -98,9 +98,9 @@ function MemberDashboard() {
         </div>
 
         {/* Loans Table */}
-        <div className="space-y-4">
+        {/* <div className="space-y-4">
           <LoansTable loans={loans} isLoading={isLoadingLoans} route="member" />
-        </div>
+        </div> */}
 
         {/* Ventures Table */}
         <div className="space-y-4">

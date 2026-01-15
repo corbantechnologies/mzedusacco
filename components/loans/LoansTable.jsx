@@ -27,6 +27,8 @@ function LoansTable({ loans, isLoading, route }) {
     return ["All", ...types];
   }, [loans]);
 
+  console.log("loanTypes", loanTypes);
+
   // Filter loans by loan_type
   const filteredLoans = useMemo(() => {
     if (filterType === "All") return loans;
@@ -111,7 +113,7 @@ function LoansTable({ loans, isLoading, route }) {
             >
               {loanTypes.map((type) => (
                 <option key={type} value={type}>
-                  {type}
+                  {type.name}
                 </option>
               ))}
             </select>
