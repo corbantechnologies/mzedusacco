@@ -2,7 +2,6 @@
 
 import React from "react";
 import MemberLoadingSpinner from "@/components/general/MemberLoadingSpinner";
-import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
 import { useFetchMember } from "@/hooks/members/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -16,16 +15,22 @@ import { formatCurrency } from "@/lib/utils";
 import SavingsCard from "@/components/members/dashboard/SavingsCard";
 import LoanCard from "@/components/members/dashboard/LoanCard";
 import VentureCard from "@/components/members/dashboard/VentureCard";
+import { useFetchMemberSummary } from "@/hooks/summary/actions";
 
 function MemberDashboard() {
-  const token = useAxiosAuth();
   const {
     isLoading: isLoadingMember,
     data: member,
     refetch: refetchMember,
   } = useFetchMember();
 
-  if (isLoadingMember) return <MemberLoadingSpinner />;
+  const {
+    isLoading: isLoadingSummary,
+    data: summary,
+    refetch: refetchSummary,
+  } = useFetchMemberSummary();
+
+  if (isLoadingMember || isLoadingSummary) return <MemberLoadingSpinner />;
 
   // Calculate totals
   const totalSavings =
@@ -186,15 +191,15 @@ function MemberDashboard() {
                 member.loan_accounts.filter(
                   (l) => l.status === "Active" || l.status === "Funded"
                 ).length === 0) && (
-                  <div className="flex flex-col items-center justify-center py-8 text-center h-full">
-                    <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                      <CreditCard className="h-6 w-6 text-gray-400" />
-                    </div>
-                    <p className="text-muted-foreground text-sm">
-                      No active loans
-                    </p>
+                <div className="flex flex-col items-center justify-center py-8 text-center h-full">
+                  <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                    <CreditCard className="h-6 w-6 text-gray-400" />
                   </div>
-                )}
+                  <p className="text-muted-foreground text-sm">
+                    No active loans
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -214,15 +219,15 @@ function MemberDashboard() {
               ))}
               {(!member?.venture_accounts ||
                 member.venture_accounts.length === 0) && (
-                  <div className="flex flex-col items-center justify-center py-8 text-center h-full">
-                    <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                      <TrendingUp className="h-6 w-6 text-gray-400" />
-                    </div>
-                    <p className="text-muted-foreground text-sm">
-                      No active ventures
-                    </p>
+                <div className="flex flex-col items-center justify-center py-8 text-center h-full">
+                  <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                    <TrendingUp className="h-6 w-6 text-gray-400" />
                   </div>
-                )}
+                  <p className="text-muted-foreground text-sm">
+                    No active ventures
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
