@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/table";
 import { AlertCircle, CheckCircle2, FileText, Pencil, X, Send, ThumbsUp, ThumbsDown, Edit } from "lucide-react";
 import { MemberUpdateLoanApplication } from "@/forms/loanapplications/MemberUpdateLoanApplication";
+import { AdminAmendLoanApplication } from "@/forms/loanapplications/AdminAmendLoanApplication";
 import { submitForAmendment, approveLoanApplication, rejectLoanApplication } from "@/services/loanapplications";
 import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
 import toast from "react-hot-toast";
@@ -45,6 +46,7 @@ export default function AdminLoanApplicationDetail({ params }) {
     );
     const token = useAxiosAuth()
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [isAmendModalOpen, setIsAmendModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // TODO: Verify how to identify "My Application" (e.g., check created_by vs current user)
@@ -150,7 +152,7 @@ export default function AdminLoanApplicationDetail({ params }) {
                             <h1 className="text-3xl font-bold text-gray-900">
                                 {application.product} Application
                             </h1>
-                            
+
                         </div>
                         <p className="text-muted-foreground font-mono mt-1">
                             Ref: {application.reference} {application.member ? ` | Member: ${application.member.name || application.created_by}` : ''}
@@ -221,7 +223,7 @@ export default function AdminLoanApplicationDetail({ params }) {
                                 )}
                                 {application.status === 'Ready for Amendment' && (
                                     <Button
-                                        disabled={isSubmitting} // Placeholder for Amend Action
+                                        onClick={() => setIsAmendModalOpen(true)}
                                         className="bg-amber-600 hover:bg-amber-700 w-full sm:w-auto"
                                     >
                                         <Edit className="mr-2 h-4 w-4" />
@@ -395,6 +397,33 @@ export default function AdminLoanApplicationDetail({ params }) {
                             <div className="p-6">
                                 <MemberUpdateLoanApplication
                                     closeModal={() => setIsUpdateModalOpen(false)}
+                                    reference={reference}
+                                    loanApplication={application}
+                                    onSuccess={refetch}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Admin Amend Modal */}
+                {isAmendModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                        <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+                            <div className="flex items-center justify-between p-6 border-b">
+                                <h2 className="text-xl font-bold text-gray-900">Amend Application</h2>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setIsAmendModalOpen(false)}
+                                    className="h-8 w-8 rounded-full"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <div className="p-6">
+                                <AdminAmendLoanApplication
+                                    closeModal={() => setIsAmendModalOpen(false)}
                                     reference={reference}
                                     loanApplication={application}
                                     onSuccess={refetch}
