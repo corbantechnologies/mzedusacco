@@ -23,45 +23,28 @@ function MemberNavbar() {
               Mwanda Mzedu SACCO
             </h1>
           </Link>
-          <nav className="hidden md:flex gap-6 items-center">
-            <Link
-              href="/member/dashboard"
-              className="hover:underline text-base"
-            >
-              Dashboard
-            </Link>
-            <Link href="/member/settings" className="hover:underline text-base">
-              Profile
-            </Link>
-            
+          <div className="flex items-center gap-4">
+            {/* Removed standard nav, now always using the sidebar menu */}
             <Button
               variant="outline"
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="border-white text-black cursor-pointer hover:bg-white hover:text-primary text-base py-1"
+              className="border-white text-black hover:bg-white hover:text-primary"
+              onClick={() => setIsMenuOpen(true)}
+              aria-label="Open menu"
             >
-              Logout
+              <MenuIcon className="h-5 w-5" />
+              <span className="sr-only">Menu</span>
             </Button>
-          </nav>
-          <Button
-            variant="outline"
-            className="md:hidden border-white text-black hover:bg-white hover:text-primary"
-            onClick={() => setIsMenuOpen(true)}
-            aria-label="Open menu"
-          >
-            <MenuIcon className="h-5 w-5" />
-            <span className="sr-only">Menu</span>
-          </Button>
+          </div>
         </div>
       </header>
 
-      {/* Mobile Sidebar */}
+      {/* Sidebar (Always accessible) */}
       <div
-        className={`fixed inset-y-0 right-0 z-50 w-[200px] sm:w-[300px] bg-white text-black transform ${
-          isMenuOpen ? "translate-x-0" : "translate-x-full"
-        } transition-transform duration-300 ease-in-out md:hidden border-l border-primary shadow-lg`}
+        className={`fixed inset-y-0 right-0 z-50 w-[250px] sm:w-[300px] bg-white text-black transform ${isMenuOpen ? "translate-x-0" : "translate-x-full"
+          } transition-transform duration-300 ease-in-out border-l border-primary shadow-lg`}
       >
         <div className="flex flex-col h-full">
-          <div className="p-4 flex justify-between items-center">
+          <div className="p-4 flex justify-between items-center border-b">
             <h2 className="text-lg font-semibold text-primary">Menu</h2>
             <Button
               variant="ghost"
@@ -73,7 +56,7 @@ function MemberNavbar() {
               <span className="sr-only">Close menu</span>
             </Button>
           </div>
-          <nav className="flex flex-col gap-6 p-4">
+          <nav className="flex flex-col gap-6 p-6">
             <Link
               href="/"
               className="text-lg hover:text-[#067a46]"
@@ -101,7 +84,7 @@ function MemberNavbar() {
                 setIsMenuOpen(false);
                 signOut({ callbackUrl: "/login" });
               }}
-              className="border-primary text-primary hover:bg-primary hover:text-white text-base py-2"
+              className="border-primary text-primary hover:bg-primary hover:text-white text-base py-2 mt-4"
             >
               Logout
             </Button>
@@ -109,10 +92,10 @@ function MemberNavbar() {
         </div>
       </div>
 
-      {/* Overlay for Mobile Sidebar */}
+      {/* Overlay for Sidebar */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsMenuOpen(false)}
         ></div>
       )}
