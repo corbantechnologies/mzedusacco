@@ -43,7 +43,7 @@ function BulkLoanRepaymentsUpload({ isOpen, onClose, refetchTransactions }) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-[#cc5500]">
+          <DialogTitle className="text-[#ea1315]">
             Bulk Loan Repayments Upload
           </DialogTitle>
         </DialogHeader>

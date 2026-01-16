@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import useAxiosAuth from "../authentication/useAxiosAuth";
-import { getSavingTypeDetail, getSavingTypes } from "@/services/savingstypes";
+import { getSavingTypeDetail, getSavingTypes } from "@/services/savingtypes";
 
 export function useFetchSavingsTypes() {
   const token = useAxiosAuth();

@@ -18,6 +18,7 @@ import {
   Clock,
   Wallet,
   Wallet2,
+  Briefcase,
   CheckCircle,
 } from "lucide-react";
 import {
@@ -51,9 +52,7 @@ function AccountSettings() {
   };
 
   const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ""}${
-      lastName?.charAt(0) || ""
-    }`.toUpperCase();
+    return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`.toUpperCase();
   };
 
   const InfoField = ({ icon: Icon, label, value }) => (
@@ -70,21 +69,21 @@ function AccountSettings() {
 
   if (isLoadingMember) return <LoadingSpinner />;
 
+  // Check if employment data exists
+  const hasEmploymentData =
+    member?.employment_type || member?.employer || member?.job_title;
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-4 space-y-8">
+      <div className="mx-auto p-4 space-y-8">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/member/dashboard">
-                <BreadcrumbPage>Dashboard</BreadcrumbPage>
-              </BreadcrumbLink>
+              <BreadcrumbLink href="/member/dashboard">Dashboard</BreadcrumbLink>
               <BreadcrumbSeparator />
             </BreadcrumbItem>
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">
-                <BreadcrumbPage>Account Settings</BreadcrumbPage>
-              </BreadcrumbLink>
+              <BreadcrumbPage>Account Settings</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -101,8 +100,7 @@ function AccountSettings() {
               <div className="flex-1 space-y-4 w-full">
                 <div>
                   <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
-                    {member?.salutation} {member?.first_name}{" "}
-                    {member?.middle_name} {member?.last_name}
+                    {member?.first_name} {member?.middle_name} {member?.last_name}
                   </h1>
                   <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
                     <span className="flex items-center gap-1">
@@ -120,14 +118,15 @@ function AccountSettings() {
                   <Button
                     onClick={() => setUpdateModal(true)}
                     size="sm"
-                    className="bg-primary hover:bg-[#022007] text-white px-8 w-full sm:w-auto"
+                    className="bg-primary hover:bg-primary/90 text-white px-8 w-full sm:w-auto"
                   >
                     Update Account
                   </Button>
                   <Button
                     onClick={() => setPasswordModal(true)}
                     size="sm"
-                    className="bg-red-500 hover:bg-[#022007] text-white px-8 w-full sm:w-auto"
+                    variant="destructive"
+                    className="px-8 w-full sm:w-auto"
                   >
                     Change Password
                   </Button>
@@ -147,61 +146,33 @@ function AccountSettings() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid md:grid-cols-2 gap-4">
-                <InfoField
-                  icon={Mail}
-                  label="Email Address"
-                  value={member?.email}
-                />
-                <InfoField
-                  icon={Phone}
-                  label="Phone Number"
-                  value={member?.phone}
-                />
-                <InfoField
-                  icon={Calendar}
-                  label="Date of Birth"
-                  value={formatDate(member?.dob)}
-                />
+                <InfoField icon={Mail} label="Email Address" value={member?.email} />
+                <InfoField icon={Phone} label="Phone Number" value={member?.phone} />
+                <InfoField icon={Calendar} label="Date of Birth" value={formatDate(member?.dob)} />
                 <InfoField icon={User} label="Gender" value={member?.gender} />
-                <InfoField
-                  icon={MapPin}
-                  label="County"
-                  value={member?.county}
-                />
-                <InfoField
-                  icon={CreditCard}
-                  label="Reference Code"
-                  value={member?.reference}
-                />
+                <InfoField icon={MapPin} label="County" value={member?.county} />
+                <InfoField icon={CreditCard} label="Reference Code" value={member?.reference} />
               </CardContent>
             </Card>
 
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-2xl">
-                  <Building className="h-6 w-6 text-primary" />
-                  Employment Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="grid md:grid-cols-2 gap-4">
-                <InfoField
-                  icon={Building}
-                  label="Employment Type"
-                  value={member?.employment_type}
-                />
-                <InfoField
-                  icon={Building}
-                  label="Employer"
-                  value={member?.employer}
-                />
-                <InfoField
-                  icon={User}
-                  label="Job Title"
-                  value={member?.job_title}
-                />
-              </CardContent>
-            </Card>
+            {/* Only show Employment Details if data exists */}
+            {hasEmploymentData && (
+              <Card className="shadow-md">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-2xl">
+                    <Building className="h-6 w-6 text-primary" />
+                    Employment Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-4">
+                  <InfoField icon={Building} label="Employment Type" value={member?.employment_type} />
+                  <InfoField icon={Building} label="Employer" value={member?.employer} />
+                  <InfoField icon={Briefcase} label="Job Title" value={member?.job_title} />
+                </CardContent>
+              </Card>
+            )}
 
+            {/* Savings Accounts - using correct field: savings */}
             <Card className="shadow-md">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
@@ -210,20 +181,15 @@ function AccountSettings() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {member?.savings_accounts?.length > 0 ? (
-                  <>
-                    {member?.savings_accounts.map((account) => (
-                      <div key={account?.reference} className="space-y-2">
-                        <InfoField
-                          icon={Wallet2}
-                          label={`${account?.account_type} - ${account?.account_number}`}
-                          value={`${account?.balance} ${
-                            account?.currency || "KES"
-                          }`}
-                        />
-                      </div>
-                    ))}
-                  </>
+                {member?.savings?.length > 0 ? (
+                  member.savings.map((account) => (
+                    <InfoField
+                      key={account.reference}
+                      icon={Wallet2}
+                      label={`${account.account_type} - ${account.account_number}`}
+                      value={`${parseFloat(account.balance).toLocaleString()} KES`}
+                    />
+                  ))
                 ) : (
                   <p className="text-muted-foreground text-center py-4">
                     No savings accounts found.
@@ -232,31 +198,53 @@ function AccountSettings() {
               </CardContent>
             </Card>
 
+            {/* Venture Accounts - new section */}
             <Card className="shadow-md">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
-                  <Wallet className="h-6 w-6 text-primary" />
+                  <Briefcase className="h-6 w-6 text-primary" />
+                  Venture Accounts
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {member?.venture_accounts?.length > 0 ? (
+                  member.venture_accounts.map((account) => (
+                    <InfoField
+                      key={account.reference}
+                      icon={Wallet2}
+                      label={`${account.venture_type} - ${account.account_number}`}
+                      value={`${parseFloat(account.balance).toLocaleString()} KES`}
+                    />
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-center py-4">
+                    No venture accounts found.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Loan Accounts */}
+            <Card className="shadow-md">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <CreditCard className="h-6 w-6 text-primary" />
                   Loan Accounts
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {member?.loans?.length > 0 ? (
-                  <>
-                    {member?.loans.map((account) => (
-                      <div key={account?.reference} className="space-y-2">
-                        <InfoField
-                          icon={CreditCard}
-                          label={`${account?.loan_type} - ${account?.account_number}`}
-                          value={`${account?.outstanding_balance} ${
-                            account?.currency || "KES"
-                          }`}
-                        />
-                      </div>
-                    ))}
-                  </>
+                {member?.loan_accounts?.length > 0 ? (
+                  member.loan_accounts.map((account) => (
+                    <InfoField
+                      key={account.reference}
+                      icon={CreditCard}
+                      label={`${account.loan_type || "Loan"} - ${account.account_number}`}
+                      value={`${parseFloat(account.outstanding_balance || 0).toLocaleString()} KES`}
+                    />
+                  ))
                 ) : (
                   <p className="text-muted-foreground text-center py-4">
-                    No loan accounts found.
+                    No active loans.
                   </p>
                 )}
               </CardContent>
@@ -272,21 +260,9 @@ function AccountSettings() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <InfoField
-                  icon={CreditCard}
-                  label="ID Type"
-                  value={member?.id_type}
-                />
-                <InfoField
-                  icon={CreditCard}
-                  label="ID Number"
-                  value={member?.id_number}
-                />
-                <InfoField
-                  icon={CreditCard}
-                  label="Tax PIN"
-                  value={member?.tax_pin}
-                />
+                <InfoField icon={CreditCard} label="ID Type" value={member?.id_type} />
+                <InfoField icon={CreditCard} label="ID Number" value={member?.id_number} />
+                <InfoField icon={CreditCard} label="Tax PIN" value={member?.tax_pin} />
               </CardContent>
             </Card>
 
@@ -301,23 +277,15 @@ function AccountSettings() {
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
                   <div className="h-3 w-3 rounded-full bg-primary"></div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">
-                      Account Created
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDate(member?.created_at)}
-                    </p>
+                    <p className="text-sm font-medium text-foreground">Account Created</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(member?.created_at)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
                   <div className="h-3 w-3 rounded-full bg-primary"></div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">
-                      Last Updated
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDate(member?.updated_at)}
-                    </p>
+                    <p className="text-sm font-medium text-foreground">Last Updated</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(member?.updated_at)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -331,10 +299,7 @@ function AccountSettings() {
           refetchMember={refetchMember}
           member={member}
         />
-        <ChangePassword
-          isOpen={passwordModal}
-          onClose={() => setPasswordModal(false)}
-        />
+        <ChangePassword isOpen={passwordModal} onClose={() => setPasswordModal(false)} />
       </div>
     </div>
   );

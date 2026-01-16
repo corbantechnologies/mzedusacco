@@ -1,6 +1,6 @@
 "use client";
 
-import { getLoan, getLoans } from "@/services/loans";
+import { getLoan, getLoans } from "@/services/loanaccounts";
 import useAxiosAuth from "../authentication/useAxiosAuth";
 import { useQuery } from "@tanstack/react-query";
 
