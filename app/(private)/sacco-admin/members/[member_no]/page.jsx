@@ -38,7 +38,7 @@ import CreateDepositAdmin from "@/forms/savingsdepostis/CreateDepositAdmin";
 import CreateLoanAccountAdmin from "@/forms/loans/CreateLoanAdmin";
 import CreateVentureDeposits from "@/forms/venturedeposits/CreateVentureDeposits";
 import CreateVenturePayment from "@/forms/venturepayments/CreateVenturePayment";
-import { useFetchLoanTypes } from "@/hooks/loantypes/actions";
+import { useFetchLoanProducts } from "@/hooks/loanproducts/actions";
 
 function MemberDetail() {
   const { member_no } = useParams();
@@ -49,7 +49,7 @@ function MemberDetail() {
     refetch: refetchMember,
   } = useFetchMemberDetail(member_no);
 
-  const { data: loanTypes } = useFetchLoanTypes();
+  const { data: loanProducts } = useFetchLoanProducts();
 
   const [isApproving, setIsApproving] = useState(false);
   const [depositModal, setDepositModal] = useState(false);
@@ -437,7 +437,7 @@ function MemberDetail() {
           isOpen={loanModal}
           onClose={() => setLoanModal(false)}
           refetchMember={refetchMember}
-          loanTypes={loanTypes}
+          loanProducts={loanProducts}
           member={member}
         />
 

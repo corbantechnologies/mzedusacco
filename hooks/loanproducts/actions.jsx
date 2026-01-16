@@ -4,20 +4,21 @@ import { getLoanProductDetail, getLoanProducts } from "@/services/loanproducts";
 import useAxiosAuth from "../authentication/useAxiosAuth";
 import { useQuery } from "@tanstack/react-query";
 
-export function useFetchLoanTypes() {
+export function useFetchLoanProducts() {
   const token = useAxiosAuth();
 
   return useQuery({
-    queryKey: ["loanTypes"],
+    queryKey: ["loanProducts"],
     queryFn: () => getLoanProducts(token),
   });
 }
 
-export function useFetchLoanTypeDetail(reference) {
+export function useFetchLoanProductDetail(reference) {
   const token = useAxiosAuth();
 
   return useQuery({
-    queryKey: ["loanType", reference],
+    queryKey: ["loanProduct", reference],
     queryFn: () => getLoanProductDetail(reference, token),
+    enabled: !!reference,
   });
 }

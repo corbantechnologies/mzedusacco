@@ -13,12 +13,12 @@ export function useFetchLoans() {
   });
 }
 
-export function useFetchLoanDetail(identity) {
+export function useFetchLoanDetail(reference) {
   const token = useAxiosAuth();
 
   return useQuery({
-    queryKey: ["loan", identity],
-    queryFn: () => getLoan(identity, token),
-    enabled: !!identity,
+    queryKey: ["loan", reference],
+    queryFn: () => getLoan(reference, token),
+    enabled: !!reference,
   });
 }
