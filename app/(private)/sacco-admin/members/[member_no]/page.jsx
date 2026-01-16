@@ -41,6 +41,7 @@ import CreateVenturePayment from "@/forms/venturepayments/CreateVenturePayment";
 import { useFetchLoanProducts } from "@/hooks/loanproducts/actions";
 import { useFetchMemberSummary } from "@/hooks/summary/actions";
 import MemberFinancialSummary from "@/components/members/dashboard/MemberFinancialSummary";
+import EmptyState from "@/components/general/EmptyState";
 
 function MemberDetail() {
   const { member_no } = useParams();
@@ -258,9 +259,14 @@ function MemberDetail() {
                   />
                 ))
               ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No savings accounts found.
-                </p>
+                <div className="py-4">
+                  <EmptyState
+                    title="No Savings Accounts"
+                    message="This member has no active savings accounts."
+                    icon={Wallet2}
+                    className="border-0 bg-transparent p-0"
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -304,9 +310,14 @@ function MemberDetail() {
                   />
                 ))
               ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No venture accounts found.
-                </p>
+                <div className="py-4">
+                  <EmptyState
+                    title="No Venture Accounts"
+                    message="This member has no active venture accounts."
+                    icon={Wallet}
+                    className="border-0 bg-transparent p-0"
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -341,9 +352,14 @@ function MemberDetail() {
                   />
                 ))
               ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No loan accounts found.
-                </p>
+                <div className="py-4">
+                  <EmptyState
+                    title="No Loan Accounts"
+                    message="This member has no active loan accounts."
+                    icon={CreditCard}
+                    className="border-0 bg-transparent p-0"
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -471,9 +487,14 @@ function MemberDetail() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-center py-4">
-                    No special roles assigned
-                  </p>
+                  <div className="py-4">
+                    <EmptyState
+                      title="No Special Roles"
+                      message="This member has no special roles assigned."
+                      icon={Shield}
+                      className="border-0 bg-transparent p-0"
+                    />
+                  </div>
                 )}
               </CardContent>
             </Card>

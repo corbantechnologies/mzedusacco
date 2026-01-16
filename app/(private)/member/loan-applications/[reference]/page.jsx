@@ -58,6 +58,7 @@ import {
   acceptAmendment,
   rejectAmendment,
 } from "@/services/loanapplications";
+import EmptyState from "@/components/general/EmptyState";
 
 export default function LoanApplicationDetail({ params }) {
   const { reference } = use(params);
@@ -169,8 +170,12 @@ export default function LoanApplicationDetail({ params }) {
   if (isLoading) return <MemberLoadingSpinner />;
   if (!application)
     return (
-      <div className="p-8 text-center text-muted-foreground">
-        Application not found.
+      <div className="p-8">
+        <EmptyState
+          title="Application Not Found"
+          message="The loan application you are looking for does not exist or has been deleted."
+          icon={FileText}
+        />
       </div>
     );
 

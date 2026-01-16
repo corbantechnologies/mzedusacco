@@ -36,6 +36,7 @@ import { Check, X, Eye, AlertCircle } from "lucide-react";
 import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
 import { updateGuaranteeRequest } from "@/services/guaranteerequests";
 import toast from "react-hot-toast";
+import EmptyState from "@/components/general/EmptyState";
 
 export default function GuarantorProfilePage() {
   const { data: profile, isLoading, refetch } = useFetchGuarantorProfile();
@@ -95,8 +96,12 @@ export default function GuarantorProfilePage() {
   if (isLoading) return <MemberLoadingSpinner />;
   if (!profile)
     return (
-      <div className="p-8 text-center text-muted-foreground">
-        Profile not found.
+      <div className="p-8">
+        <EmptyState
+          title="Profile Not Found"
+          message="Could not load your guarantor profile. Please try again later."
+          icon={AlertCircle}
+        />
       </div>
     );
 
