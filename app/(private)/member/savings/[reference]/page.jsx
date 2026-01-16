@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import MpesaCreateDepositForm from "@/forms/savingsdepostis/MpesaCreateDepositForm";
 
 function SavingsDetail() {
   const { reference } = useParams();
@@ -40,6 +41,7 @@ function SavingsDetail() {
   const [monthFilter, setMonthFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
   const itemsPerPage = 10;
 
   const {
@@ -191,7 +193,12 @@ function SavingsDetail() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Button className="bg-[#045e32] hover:bg-[#034625]">Deposit</Button>
+            <Button
+              className="bg-[#045e32] hover:bg-[#034625]"
+              onClick={() => setDepositModalOpen(true)}
+            >
+              Deposit
+            </Button>
           </div>
         </div>
 
@@ -384,6 +391,11 @@ function SavingsDetail() {
           )}
         </div>
       </div>
+      <MpesaCreateDepositForm
+        isOpen={depositModalOpen}
+        onClose={() => setDepositModalOpen(false)}
+        savings_account={saving}
+      />
     </div>
   );
 }
