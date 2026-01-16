@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import React, { use, useMemo } from "react";
+import React, { use, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { useFetchLoanApplicationDetail } from "@/hooks/loanapplications/actions";
 import MemberLoadingSpinner from "@/components/general/MemberLoadingSpinner";
@@ -32,13 +32,34 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { AlertCircle, CheckCircle2, FileText } from "lucide-react";
+import { AlertCircle, CheckCircle2, FileText, Pencil, X, Send } from "lucide-react";
+import { MemberUpdateLoanApplication } from "@/forms/loanapplications/MemberUpdateLoanApplication";
+import { submitForAmendment } from "@/services/loanapplications";
+import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
+import toast from "react-hot-toast";
 
 export default function LoanApplicationDetail({ params }) {
     const { reference } = use(params)
-    const { data: application, isLoading } = useFetchLoanApplicationDetail(
+    const { data: application, isLoading, refetch } = useFetchLoanApplicationDetail(
         reference
     );
+    const token = useAxiosAuth()
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmitForAmendment = async () => {
+        setIsSubmitting(true);
+        try {
+            await submitForAmendment(reference, token);
+            toast.success("Application submitted to SACCO successfully!");
+            refetch();
+        } catch (error) {
+            console.error("Submission failed", error);
+            toast.error("Failed to submit application. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const schedule = useMemo(() => {
         return application?.projection?.schedule || [];
@@ -102,17 +123,33 @@ export default function LoanApplicationDetail({ params }) {
                         </p>
                     </div>
 
-                    {/* Action Buttons based on Status would go here (e.g. Accept Amendment) */}
-                    {/* Placeholder for future actions */}
+                    {/* Action Buttons based on Status */}
                     <div className="flex gap-2">
+                        {application.status === 'Pending' && (
+                            <>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsUpdateModalOpen(true)}
+                                    className="border-[#045e32] text-[#045e32] hover:bg-[#045e32]/10"
+                                >
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Update Application
+                                </Button>
+                                <Button
+                                    onClick={handleSubmitForAmendment}
+                                    disabled={isSubmitting}
+                                    className="bg-[#045e32] hover:bg-[#034625]"
+                                >
+                                    {isSubmitting ? <MemberLoadingSpinner className="h-4 w-4 mr-2" /> : <Send className="mr-2 h-4 w-4" />}
+                                    Submit for Amendment
+                                </Button>
+                            </>
+                        )}
                         {application.status === 'Amended' && (
                             <>
                                 <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">Reject</Button>
                                 <Button className="bg-[#045e32] hover:bg-[#034625]">Accept Amendment</Button>
                             </>
-                        )}
-                        {application.can_submit && (
-                            <Button className="bg-[#045e32] hover:bg-[#034625]">Submit Application</Button>
                         )}
                     </div>
                 </div>
@@ -184,6 +221,13 @@ export default function LoanApplicationDetail({ params }) {
                                                     <TableCell className="text-right text-muted-foreground">{formatCurrency(row.balance_after)}</TableCell>
                                                 </TableRow>
                                             ))}
+                                            {schedule.length === 0 && (
+                                                <TableRow>
+                                                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                                                        {application.status === 'Pending' ? "Schedule will be generated upon approval." : "No schedule available."}
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
                                         </TableBody>
                                     </Table>
                                 </div>
@@ -252,6 +296,33 @@ export default function LoanApplicationDetail({ params }) {
                         </Card>
                     </div>
                 </div>
+
+                {/* Update Modal */}
+                {isUpdateModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                        <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+                            <div className="flex items-center justify-between p-6 border-b">
+                                <h2 className="text-xl font-bold text-gray-900">Update Application</h2>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setIsUpdateModalOpen(false)}
+                                    className="h-8 w-8 rounded-full"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <div className="p-6">
+                                <MemberUpdateLoanApplication
+                                    closeModal={() => setIsUpdateModalOpen(false)}
+                                    reference={reference}
+                                    loanApplication={application}
+                                    onSuccess={refetch}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
