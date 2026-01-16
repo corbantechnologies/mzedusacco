@@ -7,9 +7,9 @@ export const getGuarantorProfiles = async (token) => {
   return response?.data.results || [];
 };
 
-export const getGuarantorProfile = async (reference, token) => {
+export const getGuarantorProfile = async (member_no, token) => {
   const response = await apiActions?.get(
-    `api/v1/guarantors/${reference}/`,
+    `api/v1/guarantors/${member_no}/`,
     token
   );
   return response?.data || {};

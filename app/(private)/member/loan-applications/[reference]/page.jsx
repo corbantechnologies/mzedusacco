@@ -532,8 +532,7 @@ export default function LoanApplicationDetail({ params }) {
             <DialogHeader>
               <DialogTitle>Request Guarantor</DialogTitle>
               <DialogDescription>
-                Select a guarantor and specify the amount you want them to
-                guarantee.
+                Select a guarantor to send a request to.
               </DialogDescription>
             </DialogHeader>
             <CreateGuaranteeRequest

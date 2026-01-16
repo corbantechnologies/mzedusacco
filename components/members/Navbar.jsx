@@ -40,8 +40,9 @@ function MemberNavbar() {
 
       {/* Sidebar (Always accessible) */}
       <div
-        className={`fixed inset-y-0 right-0 z-50 w-[250px] sm:w-[300px] bg-white text-black transform ${isMenuOpen ? "translate-x-0" : "translate-x-full"
-          } transition-transform duration-300 ease-in-out border-l border-primary shadow-lg`}
+        className={`fixed inset-y-0 right-0 z-50 w-[250px] sm:w-[300px] bg-white text-black transform ${
+          isMenuOpen ? "translate-x-0" : "translate-x-full"
+        } transition-transform duration-300 ease-in-out border-l border-primary shadow-lg`}
       >
         <div className="flex flex-col h-full">
           <div className="p-4 flex justify-between items-center border-b">
@@ -77,6 +78,13 @@ function MemberNavbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Loan Applications
+            </Link>
+            <Link
+              href="/member/guarantorprofile"
+              className="text-lg hover:text-[#067a46]"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Guarantor Profile
             </Link>
             <Link
               href="/member/settings"

@@ -6,6 +6,7 @@ import {
   getGuarantorProfiles,
   getGuarantorProfile,
 } from "@/services/guarantorprofiles";
+import useUserMemberNo from "../authentication/useUserMemberNo";
 
 export function useFetchGuarantorProfiles() {
   const token = useAxiosAuth();
@@ -17,12 +18,13 @@ export function useFetchGuarantorProfiles() {
   });
 }
 
-export function useFetchGuarantorProfile(reference) {
+export function useFetchGuarantorProfile() {
   const token = useAxiosAuth();
+  const member_no = useUserMemberNo();
 
   return useQuery({
-    queryKey: ["guarantor-profile", reference],
-    queryFn: () => getGuarantorProfile(reference, token),
-    enabled: !!token && !!reference,
+    queryKey: ["guarantor-profile", member_no],
+    queryFn: () => getGuarantorProfile(member_no, token),
+    enabled: !!token && !!member_no,
   });
 }
