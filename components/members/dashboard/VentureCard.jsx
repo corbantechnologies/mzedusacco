@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const VentureCard = ({ venture }) => {
     return (
-        <Link href={`/member/ventures/${venture.identity}`}>
+        <Link href={`/member/ventures/${venture?.reference}`}>
             <div className="flex items-center justify-between p-4 bg-white border rounded-xl hover:bg-gray-50 transition-colors shadow-sm cursor-pointer mb-2">
                 <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-gray-900">

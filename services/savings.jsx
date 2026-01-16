@@ -13,7 +13,7 @@ export const getSavings = async (token) => {
   return response?.data?.results;
 };
 
-export const getSaving = async (identity, token) => {
-  const response = await apiActions?.get(`/api/v1/savings/${identity}/`, token);
+export const getSaving = async (reference, token) => {
+  const response = await apiActions?.get(`/api/v1/savings/${reference}/`, token);
   return response?.data;
 };

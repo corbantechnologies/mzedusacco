@@ -13,12 +13,12 @@ export function useFetchVentures() {
   });
 }
 
-export function useFetchVentureDetail(identity) {
+export function useFetchVentureDetail(reference) {
   const token = useAxiosAuth();
 
   return useQuery({
-    queryKey: ["venture", identity],
-    queryFn: () => getVenture(identity, token),
-    enabled: !!identity,
+    queryKey: ["venture", reference],
+    queryFn: () => getVenture(reference, token),
+    enabled: !!reference,
   });
 }

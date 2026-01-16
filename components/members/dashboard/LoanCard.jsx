@@ -7,7 +7,7 @@ const LoanCard = ({ loan }) => {
     const nextDueDate = loan.application_details?.projection_snapshot?.schedule?.[0]?.due_date;
 
     return (
-        <Link href={`/member/loans/${loan.account_number}`}>
+        <Link href={`/member/loans/${loan?.reference}`}>
             <div className="flex flex-col space-y-3 p-4 border border-orange-100 bg-orange-50/30 rounded-xl hover:shadow-sm transition-shadow cursor-pointer mb-2">
                 <div className="flex justify-between items-center">
                     <span className="font-medium text-sm text-gray-900">

@@ -12,12 +12,12 @@ export function useFetchSavings() {
   });
 }
 
-export function useFetchSavingDetail(identity) {
+export function useFetchSavingDetail(reference) {
   const token = useAxiosAuth();
 
   return useQuery({
-    queryKey: ["saving", identity],
-    queryFn: () => getSaving(identity, token),
-    enabled: !!identity,
+    queryKey: ["saving", reference],
+    queryFn: () => getSaving(reference, token),
+    enabled: !!reference,
   });
 }
