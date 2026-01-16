@@ -1,3 +1,19 @@
+// Flow
+
+// Member applies for loan: In Progress. Here they can update the loan application.
+// Member submits for amendment Application status changes to Ready for Amendment.
+// Admin amends loan application: Application status changes to Amended.
+// Member reviews amendment. Can accept or reject
+//      If accepts: status changes to In Progress if loan is not fully covered. Here they apply for guarantors; if they accept and fully cover, it changes to Ready for Submission or it changes to Ready for Submission if loan is fully covered.
+//      If rejects: status changes to Rejected. Application ends here
+// Once status is Ready for Submission, member submits the loan application for approval.
+// Admin reviews the loan application. Can approve or decline.
+//      If approves: status changes to Approved. Loan application ends here.
+//      If declines: status changes to Declined. Loan application ends here.
+// Status changes are automatically done by the system except for the following:
+//      1. Member accepting or cancelling amendment.
+//      2. Admin approving or declining loan application.
+
 "use client"
 
 import { apiActions } from "@/tools/axios"
@@ -7,11 +23,13 @@ export const createLoanApplication = async (Values, token) => {
 }
 
 export const getLoanApplications = async (token) => {
-    await apiActions?.get("/api/v1/loanapplications/", token)
+    const response = await apiActions?.get("/api/v1/loanapplications/", token)
+    return response?.data?.results || []
 }
 
 export const getLoanApplicationDetail = async (reference, token) => {
-    await apiActions?.get(`/api/v1/loanapplications/${reference}/`, token)
+    const response = await apiActions?.get(`/api/v1/loanapplications/${reference}/`, token)
+    return response?.data || {}
 }
 
 export const updateLoanApplication = async (reference, values, token) => {

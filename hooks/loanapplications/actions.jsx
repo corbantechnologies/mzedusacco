@@ -11,6 +11,7 @@ export function useFetchLoanApplications() {
     return useQuery({
         queryKey: ["loanapplications"],
         queryFn: () => getLoanApplications(token),
+        enabled: !!token,
     })
 }
 
@@ -20,6 +21,6 @@ export function useFetchLoanApplicationDetail(reference) {
     return useQuery({
         queryKey: ["loanapplication", reference],
         queryFn: () => getLoanApplicationDetail(reference, token),
-        enabled: !!reference,
+        enabled: !!token && !!reference
     })
 }

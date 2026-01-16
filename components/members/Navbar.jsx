@@ -72,6 +72,13 @@ function MemberNavbar() {
               Dashboard
             </Link>
             <Link
+              href="/member/loan-applications"
+              className="text-lg hover:text-[#067a46]"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Loan Applications
+            </Link>
+            <Link
               href="/member/settings"
               className="text-lg hover:text-[#067a46]"
               onClick={() => setIsMenuOpen(false)}
