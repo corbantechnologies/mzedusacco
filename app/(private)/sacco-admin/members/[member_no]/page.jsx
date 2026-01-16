@@ -40,6 +40,7 @@ import CreateVentureDeposits from "@/forms/venturedeposits/CreateVentureDeposits
 import CreateVenturePayment from "@/forms/venturepayments/CreateVenturePayment";
 import { useFetchLoanProducts } from "@/hooks/loanproducts/actions";
 import { useFetchMemberSummary } from "@/hooks/summary/actions";
+import MemberFinancialSummary from "@/components/members/dashboard/MemberFinancialSummary";
 
 function MemberDetail() {
   const { member_no } = useParams();
@@ -130,7 +131,7 @@ function MemberDetail() {
   if (member?.is_superuser) activeRoles.push("Superuser");
   if (member?.is_sacco_admin) activeRoles.push("SACCO Admin");
 
-  if (isLoadingMember) return <LoadingSpinner />;
+  if (isLoadingMember || isLoadingSummary) return <LoadingSpinner />;
 
   return (
     <div className="min-h-screen bg-background">
@@ -506,6 +507,11 @@ function MemberDetail() {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Financial Summary */}
+        <div className="mt-8">
+          <MemberFinancialSummary summary={summary} />
         </div>
 
         {/* Modals */}

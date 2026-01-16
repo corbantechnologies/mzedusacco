@@ -16,6 +16,7 @@ import SavingsCard from "@/components/members/dashboard/SavingsCard";
 import LoanCard from "@/components/members/dashboard/LoanCard";
 import VentureCard from "@/components/members/dashboard/VentureCard";
 import { useFetchMemberSummary } from "@/hooks/summary/actions";
+import MemberFinancialSummary from "@/components/members/dashboard/MemberFinancialSummary";
 
 function MemberDashboard() {
   const {
@@ -28,7 +29,9 @@ function MemberDashboard() {
     isLoading: isLoadingSummary,
     data: summary,
     refetch: refetchSummary,
-  } = useFetchMemberSummary();
+  } = useFetchMemberSummary(member?.member_no);
+
+  console.log(summary);
 
   if (isLoadingMember || isLoadingSummary) return <MemberLoadingSpinner />;
 
@@ -231,6 +234,11 @@ function MemberDashboard() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Financial Summary */}
+      <div className="mt-8">
+        <MemberFinancialSummary summary={summary} />
       </div>
     </div>
   );

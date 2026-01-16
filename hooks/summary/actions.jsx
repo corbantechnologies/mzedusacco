@@ -5,12 +5,12 @@ import useAxiosAuth from "../authentication/useAxiosAuth";
 import useUserMemberNo from "../authentication/useUserMemberNo";
 import { getMemberSummary } from "@/services/membersummary";
 
-export function useFetchMemberSummary() {
+export function useFetchMemberSummary(memberNo) {
   const token = useAxiosAuth();
-  const memberNo = useUserMemberNo();
 
   return useQuery({
     queryKey: ["memberSummary", memberNo, token],
     queryFn: () => getMemberSummary(memberNo, token),
+    enabled: !!token && !!memberNo,
   });
 }
