@@ -301,10 +301,7 @@ export default function GuarantorProfilePage() {
                           Remaining to Cover:
                         </span>
                         <span className="font-bold text-amber-600">
-                          {formatCurrency(
-                            selectedRequest.loan_application_details
-                              ?.remaining_to_cover
-                          )}
+                          {formatCurrency(selectedRequest.remaining_to_cover)}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -472,6 +469,10 @@ export default function GuarantorProfilePage() {
                         <p className="text-xs text-muted-foreground">
                           Available limit:{" "}
                           {formatCurrency(profile.available_amount)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Remaining to cover:{" "}
+                          {formatCurrency(selectedRequest.remaining_to_cover)}
                         </p>
                       </div>
                     </div>

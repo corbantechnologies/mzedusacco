@@ -21,7 +21,7 @@ export const updateGuaranteeRequest = async (reference, values, token) => {
   // 1. Declined
   // 3. Accepted and inputs the amount they wish to guarantee
   // Values: status, guaranteed_amount
-  await apiActions?.put(
+  await apiActions?.patch(
     `api/v1/guaranteerequests/${reference}/status/`,
     values,
     token
