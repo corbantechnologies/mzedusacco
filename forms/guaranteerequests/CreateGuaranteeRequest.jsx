@@ -24,7 +24,6 @@ export default function CreateGuaranteeRequest({ loanApplication, onSuccess }) {
       initialValues={{
         guarantor: "",
         loan_application: loanApplication?.reference,
-        guaranteed_amount: "",
       }}
       onSubmit={async (values) => {
         setLoading(true);
@@ -54,25 +53,10 @@ export default function CreateGuaranteeRequest({ loanApplication, onSuccess }) {
               <option value="">Select a guarantor</option>
               {filteredGuarantorProfiles?.map((profile) => (
                 <option key={profile.reference} value={profile.member}>
-                  {profile.member} (Available: {profile.available_amount})
+                  {profile.member} - {profile.member_name}
                 </option>
               ))}
             </Field>
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="guaranteed_amount"
-              className="text-sm font-medium mb-2"
-            >
-              Guaranteed Amount
-            </label>
-            <Field
-              name="guaranteed_amount"
-              type="number"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Enter amount"
-            />
           </div>
 
           <div className="flex justify-end pt-4">
