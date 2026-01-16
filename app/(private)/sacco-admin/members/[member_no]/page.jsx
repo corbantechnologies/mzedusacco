@@ -270,6 +270,11 @@ function MemberDetail() {
           </CardContent>
         </Card>
 
+        {/* Financial Summary */}
+        <div className="mt-8">
+          <MemberFinancialSummary summary={summary} memberNo={member_no} />
+        </div>
+
         {/* Quick Action Cards */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Savings Accounts */}
@@ -571,11 +576,6 @@ function MemberDetail() {
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        {/* Financial Summary */}
-        <div className="mt-8">
-          <MemberFinancialSummary summary={summary} memberNo={member_no} />
         </div>
 
         {/* Modals */}
