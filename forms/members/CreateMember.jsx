@@ -41,7 +41,6 @@ function CreateMember({ closeModal, openModal }) {
             email: "",
             phone: "",
             gender: "",
-            employment_type: "",
             member_no: "",
             password: "",
           }}
@@ -139,27 +138,7 @@ function CreateMember({ closeModal, openModal }) {
                   </Field>
                 </div>
 
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="employment_type"
-                    className="text-base text-black font-medium"
-                  >
-                    Employment Type
-                  </Label>
-                  <Field
-                    as="select"
-                    name="employment_type"
-                    id="employment_type"
-                    className="w-full border border-black rounded-md px-3 py-2 text-base focus:ring-2   transition-colors"
-                  >
-                    <option value="">Select Employment Type</option>
-                    <option value="Permanent">Permanent</option>
-                    <option value="Casual">Casual</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Self-Employed">Self-Employed</option>
-                    <option value="Not Employed">Not Employed</option>
-                  </Field>
-                </div>
+              
 
 
                 <div className="space-y-2">

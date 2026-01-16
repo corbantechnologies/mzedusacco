@@ -58,8 +58,13 @@ export function CreateLoanApplication({ onSuccess, memberPath }) {
                     router.push(`/${memberPath}/loan-applications/${response?.reference}`)
                     if (onSuccess) onSuccess();
                 } catch (error) {
-                    console.error("Loan application error:", error);
-                    toast.error("Process failed. Please try again.")
+                    console.error("Loan application error:", error?.response?.data?.requested_amount[0]);
+                    if (error?.response?.data?.requested_amount[0]) {
+                        toast.error(error?.response?.data?.requested_amount[0])
+                    }else{
+                        toast.error("Process failed. Please try again.")
+                    }
+
                 } finally {
                     setSubmitting(false)
                 }
