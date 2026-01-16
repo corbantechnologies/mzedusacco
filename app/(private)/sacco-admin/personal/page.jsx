@@ -1,24 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import MemberLoadingSpinner from "@/components/general/MemberLoadingSpinner";
-import InfoCard from "@/components/member/InfoCard";
-import StatsCard from "@/components/member/StatsCard";
-import SavingsTable from "@/components/savings/SavingsTable";
-
-import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
 import { useFetchMember } from "@/hooks/members/actions";
-import { useFetchSavings } from "@/hooks/savings/actions";
-import { useFetchSavingsTypes } from "@/hooks/savingtypes/actions";
-import { DoorOpen, Plus, Wallet, Wallet2 } from "lucide-react";
-import { signOut } from "next-auth/react";
-import LoansTable from "@/components/loans/LoansTable";
-import { useFetchLoans } from "@/hooks/loans/actions";
-import { useFetchVentures } from "@/hooks/ventures/actions";
-import VenturesTable from "@/components/ventures/VenturesTable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Wallet,
+  PiggyBank,
+  TrendingUp,
+  ShieldCheck,
+  CreditCard,
+} from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
+import SavingsCard from "@/components/members/dashboard/SavingsCard";
+import LoanCard from "@/components/members/dashboard/LoanCard";
+import VentureCard from "@/components/members/dashboard/VentureCard";
+import { useFetchMemberSummary } from "@/hooks/summary/actions";
+import MemberFinancialSummary from "@/components/members/dashboard/MemberFinancialSummary";
 
 function MemberDashboard() {
-  const token = useAxiosAuth();
   const {
     isLoading: isLoadingMember,
     data: member,
@@ -26,94 +26,234 @@ function MemberDashboard() {
   } = useFetchMember();
 
   const {
-    isLoading: isLoadingLoans,
-    data: loans,
-    refetch: refetchLoans,
-  } = useFetchLoans();
+    isLoading: isLoadingSummary,
+    data: summary,
+    refetch: refetchSummary,
+  } = useFetchMemberSummary(member?.member_no);
 
-  const {
-    isLoading: isLoadingSavingTypes,
-    data: savingTypes,
-    refetch: refetchSavingTypes,
-  } = useFetchSavingsTypes();
+  console.log(summary);
 
-  const {
-    isLoading: isLoadingSavings,
-    data: savings,
-    refetch: refetchSavings,
-    error: savingsError,
-  } = useFetchSavings();
+  if (isLoadingMember || isLoadingSummary) return <MemberLoadingSpinner />;
 
-  const {
-    isLoading: isLoadingVentures,
-    data: ventures,
-    refetch: refetchVentures,
-  } = useFetchVentures();
+  // Calculate totals
+  const totalSavings =
+    member?.savings?.reduce(
+      (acc, curr) => acc + parseFloat(curr.balance || 0),
+      0
+    ) || 0;
 
-  if (
-    isLoadingMember ||
-    isLoadingSavingTypes ||
-    isLoadingSavings ||
-    isLoadingLoans
-  )
-    return <MemberLoadingSpinner />;
+  const activeLoansCount =
+    member?.loan_accounts?.filter(
+      (l) => l.status === "Active" || l.status === "Funded"
+    ).length || 0;
+
+  const totalOutstandingLoan =
+    member?.loan_accounts?.reduce(
+      (acc, curr) => acc + parseFloat(curr.outstanding_balance || 0),
+      0
+    ) || 0;
+
+  const availableGuarantorAmount =
+    member?.guarantor_profile?.available_amount || 0;
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="mx-auto p-4 sm:p-6 space-y-6">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#045e32]">
-              Hello, {member?.salutation} {member?.last_name}
-            </h1>
-            <p className="text-gray-500 mt-1">Welcome to your dashboard</p>
-          </div>
+    <div className="min-h-screen bg-gray-50/50 p-6 md:p-8 space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1 text-lg">
+            Welcome back,{" "}
+            <span className="font-semibold text-primary">
+              {member?.first_name} {member?.last_name}
+            </span>
+            .
+          </p>
         </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-white px-4 py-2 rounded-full border shadow-sm">
+          <span>Member No:</span>
+          <span className="font-mono font-bold text-gray-900">
+            {member?.member_no}
+          </span>
+        </div>
+      </div>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          <InfoCard member={member} />
-          <StatsCard
-            title="Total Savings"
-            value={savings?.length || 0}
-            Icon={Wallet}
-            description="Number of savings accounts created"
-          />
-          <StatsCard
-            title="Savings Types"
-            value={savingTypes?.length}
-            Icon={Wallet2}
-            description="Available saving products"
-          />
-        </div>
+      {/* Summary Cards Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="border-l-4 border-l-primary shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Savings
+            </CardTitle>
+            <PiggyBank className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(totalSavings)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Across {member?.savings?.length || 0} accounts
+            </p>
+          </CardContent>
+        </Card>
 
-        {/* Savings Table */}
-        <div className="space-y-4">
-          <SavingsTable
-            savings={savings}
-            isLoading={isLoadingSavings}
-            route="sacco-admin"
-          />
-        </div>
+        <Card className="border-l-4 border-l-orange-500 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Outstanding Loans
+            </CardTitle>
+            <CreditCard className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(totalOutstandingLoan)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {activeLoansCount} Active Loan{activeLoansCount !== 1 && "s"}
+            </p>
+          </CardContent>
+        </Card>
 
-        {/* Loans Table */}
-        <div className="space-y-4">
-          <LoansTable
-            loans={loans}
-            isLoading={isLoadingLoans}
-            route="sacco-admin"
-          />
-        </div>
+        <Card className="border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Guarantor Limit
+            </CardTitle>
+            <ShieldCheck className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(availableGuarantorAmount)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Available to guarantee
+            </p>
+          </CardContent>
+        </Card>
 
-        {/* Ventures Table */}
-        <div className="space-y-4">
-          <VenturesTable
-            ventures={ventures}
-            isLoading={isLoadingVentures}
-            route="sacco-admin"
-          />
-        </div>
+        <Card className="border-l-4 border-l-purple-500 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Venture Accounts
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {member?.venture_accounts?.length || 0}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Active Ventures
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        {/* Savings Breakdown */}
+        <Card className="col-span-1 lg:col-span-3 shadow-sm h-full">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-primary" />
+              Savings Portfolio
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {member?.savings?.map((account, index) => (
+                <SavingsCard
+                  key={index}
+                  account={account}
+                  memberPath="sacco-admin/personal"
+                />
+              ))}
+              {(!member?.savings || member.savings.length === 0) && (
+                <p className="text-center text-muted-foreground py-4">
+                  No savings accounts found.
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Loan Activity / Active Loans Brief */}
+        <Card className="col-span-1 lg:col-span-2 shadow-sm h-full">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-orange-600" />
+              Active Loans
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {member?.loan_accounts
+                ?.filter((l) => l.status === "Active" || l.status === "Funded")
+                .slice(0, 3)
+                .map((loan, index) => (
+                  <LoanCard
+                    key={index}
+                    loan={loan}
+                    memberPath="sacco-admin/personal"
+                  />
+                ))}
+              {(!member?.loan_accounts ||
+                member.loan_accounts.filter(
+                  (l) => l.status === "Active" || l.status === "Funded"
+                ).length === 0) && (
+                <div className="flex flex-col items-center justify-center py-8 text-center h-full">
+                  <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                    <CreditCard className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <p className="text-muted-foreground text-sm">
+                    No active loans
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Ventures Breakdown */}
+        <Card className="col-span-1 lg:col-span-2 shadow-sm h-full">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-purple-600" />
+              Ventures
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {member?.venture_accounts?.map((venture, index) => (
+                <VentureCard
+                  key={index}
+                  venture={venture}
+                  memberPath="sacco-admin/personal"
+                />
+              ))}
+              {(!member?.venture_accounts ||
+                member.venture_accounts.length === 0) && (
+                <div className="flex flex-col items-center justify-center py-8 text-center h-full">
+                  <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                    <TrendingUp className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <p className="text-muted-foreground text-sm">
+                    No active ventures
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Financial Summary */}
+      <div className="mt-8">
+        <MemberFinancialSummary
+          summary={summary}
+          memberNo={member?.member_no}
+        />
       </div>
     </div>
   );

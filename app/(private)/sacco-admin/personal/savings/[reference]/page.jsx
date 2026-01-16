@@ -163,8 +163,8 @@ function SavingsDetail() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/member/dashboard">
-                Dashboard
+              <BreadcrumbLink href="/sacco-admin/personal">
+                Personal Dashboard
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

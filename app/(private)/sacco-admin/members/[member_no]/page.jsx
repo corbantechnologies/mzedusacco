@@ -39,6 +39,11 @@ import CreateLoanAccountAdmin from "@/forms/loans/CreateLoanAdmin";
 import CreateVentureDeposits from "@/forms/venturedeposits/CreateVentureDeposits";
 import CreateVenturePayment from "@/forms/venturepayments/CreateVenturePayment";
 import { useFetchLoanProducts } from "@/hooks/loanproducts/actions";
+import { useFetchMemberSummary } from "@/hooks/summary/actions";
+import MemberFinancialSummary from "@/components/members/dashboard/MemberFinancialSummary";
+import { downloadMemberSummary } from "@/services/membersummary";
+import { Download, Loader2 } from "lucide-react";
+import EmptyState from "@/components/general/EmptyState";
 
 function MemberDetail() {
   const { member_no } = useParams();
@@ -49,13 +54,44 @@ function MemberDetail() {
     refetch: refetchMember,
   } = useFetchMemberDetail(member_no);
 
+  const {
+    isLoading: isLoadingSummary,
+    data: summary,
+    refetch: refetchSummary,
+  } = useFetchMemberSummary(member_no);
+
   const { data: loanProducts } = useFetchLoanProducts();
 
   const [isApproving, setIsApproving] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [depositModal, setDepositModal] = useState(false);
   const [loanModal, setLoanModal] = useState(false);
   const [ventureDepositModal, setVentureDepositModal] = useState(false);
   const [venturePaymentModal, setVenturePaymentModal] = useState(false);
+
+  const handleDownloadSummary = async () => {
+    if (!member_no) return;
+    setIsDownloading(true);
+    try {
+      const blob = await downloadMemberSummary(member_no, token);
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Financial_Summary_${new Date().getFullYear()}.pdf`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      toast.success("Download started");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to download summary");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const handleApprove = async () => {
     try {
@@ -95,7 +131,9 @@ function MemberDetail() {
   };
 
   const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`.toUpperCase();
+    return `${firstName?.charAt(0) || ""}${
+      lastName?.charAt(0) || ""
+    }`.toUpperCase();
   };
 
   const InfoField = ({ icon: Icon, label, value }) => (
@@ -121,7 +159,7 @@ function MemberDetail() {
   if (member?.is_superuser) activeRoles.push("Superuser");
   if (member?.is_sacco_admin) activeRoles.push("SACCO Admin");
 
-  if (isLoadingMember) return <LoadingSpinner />;
+  if (isLoadingMember || isLoadingSummary) return <LoadingSpinner />;
 
   return (
     <div className="min-h-screen bg-background">
@@ -130,11 +168,15 @@ function MemberDetail() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/sacco-admin/dashboard">Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href="/sacco-admin/dashboard">
+                Dashboard
+              </BreadcrumbLink>
               <BreadcrumbSeparator />
             </BreadcrumbItem>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/sacco-admin/members">Members</BreadcrumbLink>
+              <BreadcrumbLink href="/sacco-admin/members">
+                Members
+              </BreadcrumbLink>
               <BreadcrumbSeparator />
             </BreadcrumbItem>
             <BreadcrumbItem>
@@ -158,7 +200,9 @@ function MemberDetail() {
               <div className="flex-1 space-y-4">
                 <div>
                   <h1 className="text-4xl font-bold text-foreground mb-2">
-                    {member?.first_name} {member?.middle_name && member.middle_name + " "}{member?.last_name}
+                    {member?.first_name}{" "}
+                    {member?.middle_name && member.middle_name + " "}
+                    {member?.last_name}
                   </h1>
                   <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
                     <span className="flex items-center gap-1">
@@ -175,30 +219,61 @@ function MemberDetail() {
                 <div className="flex flex-wrap gap-3">
                   <Badge
                     variant={member?.is_approved ? "default" : "secondary"}
-                    className={member?.is_approved ? "bg-green-600 text-white" : "bg-yellow-600 text-white"}
+                    className={
+                      member?.is_approved
+                        ? "bg-green-600 text-white"
+                        : "bg-yellow-600 text-white"
+                    }
                   >
-                    {member?.is_approved ? <CheckCircle className="h-4 w-4 mr-1" /> : <Clock className="h-4 w-4 mr-1" />}
+                    {member?.is_approved ? (
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                    ) : (
+                      <Clock className="h-4 w-4 mr-1" />
+                    )}
                     {member?.is_approved ? "Approved" : "Pending Approval"}
                   </Badge>
 
-                  <Badge variant={member?.is_active ? "default" : "destructive"}>
+                  <Badge
+                    variant={member?.is_active ? "default" : "destructive"}
+                  >
                     {member?.is_active ? "Active" : "Inactive"}
                   </Badge>
                 </div>
               </div>
 
-              {!member?.is_approved && (
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  onClick={handleApprove}
-                  disabled={isApproving}
-                  className="bg-primary hover:bg-primary/90 text-white px-8"
+                  variant="outline"
+                  onClick={handleDownloadSummary}
+                  disabled={isDownloading}
+                  className="flex items-center gap-2 border-primary/20 text-primary hover:bg-primary/5"
                 >
-                  {isApproving ? "Approving..." : "Approve Member"}
+                  {isDownloading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  Download Summary
                 </Button>
-              )}
+
+                {!member?.is_approved && (
+                  <Button
+                    onClick={handleApprove}
+                    disabled={isApproving}
+                    className="bg-primary hover:bg-primary/90 text-white px-8"
+                  >
+                    {isApproving ? "Approving..." : "Approve Member"}
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Financial Summary */}
+        <div className="mt-8">
+          <MemberFinancialSummary summary={summary} memberNo={member_no} />
+        </div>
 
         {/* Quick Action Cards */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -232,9 +307,14 @@ function MemberDetail() {
                   />
                 ))
               ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No savings accounts found.
-                </p>
+                <div className="py-4">
+                  <EmptyState
+                    title="No Savings Accounts"
+                    message="This member has no active savings accounts."
+                    icon={Wallet2}
+                    className="border-0 bg-transparent p-0"
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -278,9 +358,14 @@ function MemberDetail() {
                   />
                 ))
               ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No venture accounts found.
-                </p>
+                <div className="py-4">
+                  <EmptyState
+                    title="No Venture Accounts"
+                    message="This member has no active venture accounts."
+                    icon={Wallet}
+                    className="border-0 bg-transparent p-0"
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -315,9 +400,14 @@ function MemberDetail() {
                   />
                 ))
               ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No loan accounts found.
-                </p>
+                <div className="py-4">
+                  <EmptyState
+                    title="No Loan Accounts"
+                    message="This member has no active loan accounts."
+                    icon={CreditCard}
+                    className="border-0 bg-transparent p-0"
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -334,12 +424,32 @@ function MemberDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid md:grid-cols-2 gap-4">
-                <InfoField icon={Mail} label="Email Address" value={member?.email} />
-                <InfoField icon={Phone} label="Phone Number" value={member?.phone} />
-                <InfoField icon={Calendar} label="Date of Birth" value={formatDate(member?.dob)} />
+                <InfoField
+                  icon={Mail}
+                  label="Email Address"
+                  value={member?.email}
+                />
+                <InfoField
+                  icon={Phone}
+                  label="Phone Number"
+                  value={member?.phone}
+                />
+                <InfoField
+                  icon={Calendar}
+                  label="Date of Birth"
+                  value={formatDate(member?.dob)}
+                />
                 <InfoField icon={User} label="Gender" value={member?.gender} />
-                <InfoField icon={MapPin} label="County" value={member?.county} />
-                <InfoField icon={CreditCard} label="Reference Code" value={member?.reference} />
+                <InfoField
+                  icon={MapPin}
+                  label="County"
+                  value={member?.county}
+                />
+                <InfoField
+                  icon={CreditCard}
+                  label="Reference Code"
+                  value={member?.reference}
+                />
               </CardContent>
             </Card>
 
@@ -352,9 +462,21 @@ function MemberDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-4">
-                  <InfoField icon={Building} label="Employment Type" value={member?.employment_type} />
-                  <InfoField icon={Building} label="Employer" value={member?.employer} />
-                  <InfoField icon={User} label="Job Title" value={member?.job_title} />
+                  <InfoField
+                    icon={Building}
+                    label="Employment Type"
+                    value={member?.employment_type}
+                  />
+                  <InfoField
+                    icon={Building}
+                    label="Employer"
+                    value={member?.employer}
+                  />
+                  <InfoField
+                    icon={User}
+                    label="Job Title"
+                    value={member?.job_title}
+                  />
                 </CardContent>
               </Card>
             )}
@@ -369,9 +491,21 @@ function MemberDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <InfoField icon={CreditCard} label="ID Type" value={member?.id_type} />
-                <InfoField icon={CreditCard} label="ID Number" value={member?.id_number} />
-                <InfoField icon={CreditCard} label="Tax PIN" value={member?.tax_pin} />
+                <InfoField
+                  icon={CreditCard}
+                  label="ID Type"
+                  value={member?.id_type}
+                />
+                <InfoField
+                  icon={CreditCard}
+                  label="ID Number"
+                  value={member?.id_number}
+                />
+                <InfoField
+                  icon={CreditCard}
+                  label="Tax PIN"
+                  value={member?.tax_pin}
+                />
               </CardContent>
             </Card>
 
@@ -386,14 +520,29 @@ function MemberDetail() {
                 {activeRoles.length > 0 ? (
                   <div className="space-y-3">
                     {activeRoles.map((role) => (
-                      <div key={role} className="flex items-center justify-between p-3 rounded-lg bg-primary/5">
+                      <div
+                        key={role}
+                        className="flex items-center justify-between p-3 rounded-lg bg-primary/5"
+                      >
                         <span className="font-medium">{role}</span>
-                        <Badge variant="default" className="bg-primary text-white">Active</Badge>
+                        <Badge
+                          variant="default"
+                          className="bg-primary text-white"
+                        >
+                          Active
+                        </Badge>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-center py-4">No special roles assigned</p>
+                  <div className="py-4">
+                    <EmptyState
+                      title="No Special Roles"
+                      message="This member has no special roles assigned."
+                      icon={Shield}
+                      className="border-0 bg-transparent p-0"
+                    />
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -410,14 +559,18 @@ function MemberDetail() {
                   <div className="h-3 w-3 rounded-full bg-green-600"></div>
                   <div>
                     <p className="text-sm font-medium">Account Created</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(member?.created_at)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDate(member?.created_at)}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
                   <div className="h-3 w-3 rounded-full bg-primary"></div>
                   <div>
                     <p className="text-sm font-medium">Last Updated</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(member?.updated_at)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDate(member?.updated_at)}
+                    </p>
                   </div>
                 </div>
               </CardContent>

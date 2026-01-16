@@ -59,13 +59,6 @@ function MemberNavbar() {
           </div>
           <nav className="flex flex-col gap-6 p-6">
             <Link
-              href="/"
-              className="text-lg hover:text-[#067a46]"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
               href="/member/dashboard"
               className="text-lg hover:text-[#067a46]"
               onClick={() => setIsMenuOpen(false)}
@@ -85,6 +78,13 @@ function MemberNavbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Guarantor Profile
+            </Link>
+            <Link
+              href="/member/reports"
+              className="text-lg hover:text-[#067a46]"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Reports
             </Link>
             <Link
               href="/member/settings"

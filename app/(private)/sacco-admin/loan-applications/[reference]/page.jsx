@@ -42,6 +42,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   Edit,
+  Users,
 } from "lucide-react";
 import { MemberUpdateLoanApplication } from "@/forms/loanapplications/MemberUpdateLoanApplication";
 import { AdminAmendLoanApplication } from "@/forms/loanapplications/AdminAmendLoanApplication";
@@ -63,6 +64,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import EmptyState from "@/components/general/EmptyState";
 
 export default function AdminLoanApplicationDetail({ params }) {
   const { reference } = use(params);
@@ -267,8 +269,12 @@ export default function AdminLoanApplicationDetail({ params }) {
   if (isLoading) return <MemberLoadingSpinner />;
   if (!application)
     return (
-      <div className="p-8 text-center text-muted-foreground">
-        Application not found.
+      <div className="p-8">
+        <EmptyState
+          title="Application Not Found"
+          message="The loan application you are looking for does not exist or has been deleted."
+          icon={FileText}
+        />
       </div>
     );
 
@@ -616,6 +622,57 @@ export default function AdminLoanApplicationDetail({ params }) {
                     Remaining coverage needed:{" "}
                     {formatCurrency(application.remaining_to_cover)}
                   </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Guarantors List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="h-5 w-5 text-blue-600" />
+                  Guarantors
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {application.guarantors?.length > 0 ? (
+                  application.guarantors.map((g, i) => (
+                    <div
+                      key={i}
+                      className="flex justify-between items-start border-b pb-3 last:border-0 last:pb-0"
+                    >
+                      <div>
+                        <p className="font-medium text-sm">
+                          {g.guarantor_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {g.guarantor}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium text-sm">
+                          {formatCurrency(g.guaranteed_amount)}
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs mt-1 ${
+                            g.status === "Accepted"
+                              ? "bg-green-50 text-green-700 border-green-200"
+                              : g.status === "Declined" ||
+                                g.status === "Cancelled"
+                              ? "bg-red-50 text-red-700 border-red-200"
+                              : "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {g.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No guarantors added.
+                  </p>
                 )}
               </CardContent>
             </Card>

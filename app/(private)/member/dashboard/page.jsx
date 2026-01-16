@@ -2,7 +2,6 @@
 
 import React from "react";
 import MemberLoadingSpinner from "@/components/general/MemberLoadingSpinner";
-import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
 import { useFetchMember } from "@/hooks/members/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -16,16 +15,25 @@ import { formatCurrency } from "@/lib/utils";
 import SavingsCard from "@/components/members/dashboard/SavingsCard";
 import LoanCard from "@/components/members/dashboard/LoanCard";
 import VentureCard from "@/components/members/dashboard/VentureCard";
+import { useFetchMemberSummary } from "@/hooks/summary/actions";
+import MemberFinancialSummary from "@/components/members/dashboard/MemberFinancialSummary";
 
 function MemberDashboard() {
-  const token = useAxiosAuth();
   const {
     isLoading: isLoadingMember,
     data: member,
     refetch: refetchMember,
   } = useFetchMember();
 
-  if (isLoadingMember) return <MemberLoadingSpinner />;
+  const {
+    isLoading: isLoadingSummary,
+    data: summary,
+    refetch: refetchSummary,
+  } = useFetchMemberSummary(member?.member_no);
+
+  console.log(summary);
+
+  if (isLoadingMember || isLoadingSummary) return <MemberLoadingSpinner />;
 
   // Calculate totals
   const totalSavings =
@@ -155,7 +163,11 @@ function MemberDashboard() {
           <CardContent>
             <div className="space-y-4">
               {member?.savings?.map((account, index) => (
-                <SavingsCard key={index} account={account} />
+                <SavingsCard
+                  key={index}
+                  account={account}
+                  memberPath="member"
+                />
               ))}
               {(!member?.savings || member.savings.length === 0) && (
                 <p className="text-center text-muted-foreground py-4">
@@ -180,21 +192,21 @@ function MemberDashboard() {
                 ?.filter((l) => l.status === "Active" || l.status === "Funded")
                 .slice(0, 3)
                 .map((loan, index) => (
-                  <LoanCard key={index} loan={loan} />
+                  <LoanCard key={index} loan={loan} memberPath="member" />
                 ))}
               {(!member?.loan_accounts ||
                 member.loan_accounts.filter(
                   (l) => l.status === "Active" || l.status === "Funded"
                 ).length === 0) && (
-                  <div className="flex flex-col items-center justify-center py-8 text-center h-full">
-                    <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                      <CreditCard className="h-6 w-6 text-gray-400" />
-                    </div>
-                    <p className="text-muted-foreground text-sm">
-                      No active loans
-                    </p>
+                <div className="flex flex-col items-center justify-center py-8 text-center h-full">
+                  <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                    <CreditCard className="h-6 w-6 text-gray-400" />
                   </div>
-                )}
+                  <p className="text-muted-foreground text-sm">
+                    No active loans
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -210,22 +222,34 @@ function MemberDashboard() {
           <CardContent>
             <div className="space-y-4">
               {member?.venture_accounts?.map((venture, index) => (
-                <VentureCard key={index} venture={venture} />
+                <VentureCard
+                  key={index}
+                  venture={venture}
+                  memberPath="member"
+                />
               ))}
               {(!member?.venture_accounts ||
                 member.venture_accounts.length === 0) && (
-                  <div className="flex flex-col items-center justify-center py-8 text-center h-full">
-                    <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                      <TrendingUp className="h-6 w-6 text-gray-400" />
-                    </div>
-                    <p className="text-muted-foreground text-sm">
-                      No active ventures
-                    </p>
+                <div className="flex flex-col items-center justify-center py-8 text-center h-full">
+                  <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                    <TrendingUp className="h-6 w-6 text-gray-400" />
                   </div>
-                )}
+                  <p className="text-muted-foreground text-sm">
+                    No active ventures
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Financial Summary */}
+      <div className="mt-8">
+        <MemberFinancialSummary
+          summary={summary}
+          memberNo={member?.member_no}
+        />
       </div>
     </div>
   );

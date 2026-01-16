@@ -29,8 +29,9 @@ function SaccoAdminNavbar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 right-0 z-50 w-[200px] sm:w-[300px] bg-white text-black transform ${isMenuOpen ? "translate-x-0" : "translate-x-full"
-          } transition-transform duration-300 ease-in-out border-l border-[#ea1315] shadow-lg`}
+        className={`fixed inset-y-0 right-0 z-50 w-[200px] sm:w-[300px] bg-white text-black transform ${
+          isMenuOpen ? "translate-x-0" : "translate-x-full"
+        } transition-transform duration-300 ease-in-out border-l border-[#ea1315] shadow-lg`}
       >
         <div className="flex flex-col h-full">
           <div className="p-4 flex justify-between items-center">
@@ -53,6 +54,13 @@ function SaccoAdminNavbar() {
               Dashboard
             </Link>
             <Link
+              href="/sacco-admin/reports"
+              className="text-lg hover:"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Reports
+            </Link>
+            <Link
               href="/sacco-admin/loan-applications"
               className="text-lg hover:"
               onClick={() => setIsMenuOpen(false)}
@@ -72,6 +80,13 @@ function SaccoAdminNavbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Members
+            </Link>
+            <Link
+              href="/sacco-admin/personal/guarantorprofile"
+              className="text-lg hover:"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Guarantor Profile
             </Link>
             <Link
               href="/sacco-admin/transact"
