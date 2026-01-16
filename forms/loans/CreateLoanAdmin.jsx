@@ -20,7 +20,7 @@ function CreateLoanAccountAdmin({
   isOpen,
   onClose,
   refetchMember,
-  loanTypes,
+  loanProducts,
   member,
 }) {
   const [loading, setLoading] = useState(false);
@@ -35,7 +35,7 @@ function CreateLoanAccountAdmin({
 
         <Formik
           initialValues={{
-            product: loanTypes?.name || "",
+            product: loanProducts?.name || "",
             member: member?.member_no || "",
             principal: 0,
           }}
@@ -81,7 +81,7 @@ function CreateLoanAccountAdmin({
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="" label="Select loan type" />
-                  {loanTypes?.map((type) => (
+                  {loanProducts?.map((type) => (
                     <option key={type?.reference} value={type?.name}>
                       {type?.name}
                     </option>
