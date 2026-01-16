@@ -35,7 +35,7 @@ import {
 import { AlertCircle, CheckCircle2, FileText, Pencil, X, Send, ThumbsUp, ThumbsDown, Edit } from "lucide-react";
 import { MemberUpdateLoanApplication } from "@/forms/loanapplications/MemberUpdateLoanApplication";
 import { AdminAmendLoanApplication } from "@/forms/loanapplications/AdminAmendLoanApplication";
-import { submitForAmendment, approveLoanApplication, rejectLoanApplication } from "@/services/loanapplications";
+import { submitForAmendment, approveLoanApplication, rejectLoanApplication, acceptAmendment, rejectAmendment } from "@/services/loanapplications";
 import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
 import toast from "react-hot-toast";
 
@@ -67,6 +67,35 @@ export default function AdminLoanApplicationDetail({ params }) {
             setIsSubmitting(false);
         }
     };
+
+    const handleAcceptAmendment = async () => {
+        setIsSubmitting(true);
+        try {
+            await acceptAmendment(reference, token);
+            toast.success("Amendment accepted successfully!");
+            refetch();
+        } catch (error) {
+            console.error("Acceptance failed", error);
+            toast.error("Failed to accept amendment. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
+
+    const handleRejectAmendment = async () => {
+        if (!confirm("Are you sure you want to reject this amendment? This will cancel your application.")) return;
+        setIsSubmitting(true);
+        try {
+            await rejectAmendment(reference, token);
+            toast.success("Amendment rejected. Application cancelled.");
+            refetch();
+        } catch (error) {
+            console.error("Rejection failed", error);
+            toast.error("Failed to reject amendment.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
 
     const handleApprove = async () => {
         if (!confirm("Are you sure you want to approve this loan application?")) return;
@@ -190,8 +219,21 @@ export default function AdminLoanApplicationDetail({ params }) {
                                 )}
                                 {application.status === 'Amended' && (
                                     <>
-                                        <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto">Reject</Button>
-                                        <Button className="bg-[#045e32] hover:bg-[#034625] w-full sm:w-auto">Accept Amendment</Button>
+                                        <Button
+                                            onClick={handleRejectAmendment}
+                                            disabled={isSubmitting}
+                                            variant="outline"
+                                            className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto"
+                                        >
+                                            Reject
+                                        </Button>
+                                        <Button
+                                            onClick={handleAcceptAmendment}
+                                            disabled={isSubmitting}
+                                            className="bg-[#045e32] hover:bg-[#034625] w-full sm:w-auto"
+                                        >
+                                            Accept Amendment
+                                        </Button>
                                     </>
                                 )}
                             </>
