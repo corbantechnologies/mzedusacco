@@ -163,7 +163,11 @@ function MemberDashboard() {
           <CardContent>
             <div className="space-y-4">
               {member?.savings?.map((account, index) => (
-                <SavingsCard key={index} account={account} />
+                <SavingsCard
+                  key={index}
+                  account={account}
+                  memberPath="member"
+                />
               ))}
               {(!member?.savings || member.savings.length === 0) && (
                 <p className="text-center text-muted-foreground py-4">
@@ -188,7 +192,7 @@ function MemberDashboard() {
                 ?.filter((l) => l.status === "Active" || l.status === "Funded")
                 .slice(0, 3)
                 .map((loan, index) => (
-                  <LoanCard key={index} loan={loan} />
+                  <LoanCard key={index} loan={loan} memberPath="member" />
                 ))}
               {(!member?.loan_accounts ||
                 member.loan_accounts.filter(
@@ -218,7 +222,11 @@ function MemberDashboard() {
           <CardContent>
             <div className="space-y-4">
               {member?.venture_accounts?.map((venture, index) => (
-                <VentureCard key={index} venture={venture} />
+                <VentureCard
+                  key={index}
+                  venture={venture}
+                  memberPath="member"
+                />
               ))}
               {(!member?.venture_accounts ||
                 member.venture_accounts.length === 0) && (
