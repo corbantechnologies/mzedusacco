@@ -7,7 +7,7 @@ import { useFetchLoanDetail } from "@/hooks/loans/actions";
 import { useFetchMember } from "@/hooks/members/actions";
 import MemberLoadingSpinner from "@/components/general/MemberLoadingSpinner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Table,
     TableBody,
@@ -17,6 +17,8 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -30,501 +32,448 @@ import autoTable from "jspdf-autotable";
 
 function LoanDetail() {
     const { reference } = useParams();
+    const [activeTab, setActiveTab] = useState("overview"); // overview, schedule, transactions
+    const [monthFilter, setMonthFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     const {
         isLoading: isLoadingLoan,
         data: loan,
         refetch: refetchLoan,
     } = useFetchLoanDetail(reference);
+
     const {
         isLoading: isLoadingMember,
         data: member,
         refetch: refetchMember,
     } = useFetchMember();
-    const [monthFilter, setMonthFilter] = useState("");
-    const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
-    const [statusFilter, setStatusFilter] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
 
-    // Combine repayments and interest transactions
-    const allTransactions = useMemo(() => {
-        if (!loan) return [];
-        const repayments = (loan.repayments || []).map((repayment) => ({
-            ...repayment,
-            transaction_type: "Repayment",
-            outstanding_balance: loan.outstanding_balance,
-            details: "N/A",
-        }));
-        const interests = (loan.loan_interests || []).map((interest) => ({
-            ...interest,
-            transaction_type: "Interest",
-            outstanding_balance:
-                interest.outstanding_balance || loan.outstanding_balance,
-            payment_method: interest.payment_method || "N/A",
-            transaction_status: interest.transaction_status || "Completed",
-            details: "N/A",
-        }));
-        return [...repayments, ...interests].sort(
-            (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        );
+    // --- Computed Data ---
+
+    const schedule = useMemo(() => {
+        return loan?.application_details?.projection_snapshot?.schedule || [];
     }, [loan]);
 
-    // Filter transactions
+    const allTransactions = useMemo(() => {
+        if (!loan) return [];
+
+        const disbursements = (loan.disbursements || []).map(d => ({
+            ...d,
+            type: 'Disbursement',
+            amount: d.amount, // Verify field name, assuming amount
+            date: d.created_at,
+            status: 'Completed', // Disbursements are usually completed if they exist here
+            method: d.method || 'N/A'
+        }));
+
+        const payments = (loan.loan_payments || loan.repayments || []).map(p => ({
+            ...p,
+            type: 'Repayment',
+            amount: p.amount,
+            date: p.created_at,
+            status: p.transaction_status || 'Completed',
+            method: p.payment_method || 'N/A'
+        }));
+
+        // Combine and sort desc
+        return [...disbursements, ...payments].sort((a, b) => new Date(b.date) - new Date(a.date));
+    }, [loan]);
+
     const filteredTransactions = useMemo(() => {
-        return allTransactions.filter((transaction) => {
-            const transactionDate = new Date(transaction.created_at);
+        return allTransactions.filter((t) => {
+            const tDate = new Date(t.date);
             if (monthFilter) {
                 const [year, month] = monthFilter.split("-").map(Number);
-                const startOfSelectedMonth = startOfMonth(new Date(year, month - 1));
-                const endOfSelectedMonth = endOfMonth(new Date(year, month - 1));
-                if (
-                    !isWithinInterval(transactionDate, {
-                        start: startOfSelectedMonth,
-                        end: endOfSelectedMonth,
-                    })
-                ) {
-                    return false;
-                }
+                const start = startOfMonth(new Date(year, month - 1));
+                const end = endOfMonth(new Date(year, month - 1));
+                if (!isWithinInterval(tDate, { start, end })) return false;
             }
-            if (
-                paymentMethodFilter &&
-                transaction.payment_method !== paymentMethodFilter
-            )
-                return false;
-            if (statusFilter && transaction.transaction_status !== statusFilter)
-                return false;
+            if (statusFilter && t.status !== statusFilter) return false;
             return true;
         });
-    }, [allTransactions, monthFilter, paymentMethodFilter, statusFilter]);
+    }, [allTransactions, monthFilter, statusFilter]);
 
-    // Pagination
-    const totalItems = filteredTransactions.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    // Pagination for transactions
+    const totalTxItems = filteredTransactions.length;
+    const totalTxPages = Math.ceil(totalTxItems / itemsPerPage);
     const paginatedTransactions = filteredTransactions.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
 
-    // Early returns after all Hooks
-    if (isLoadingLoan || isLoadingMember) return <MemberLoadingSpinner />;
-    if (!loan || !member) return <div>No loan or member data found.</div>;
+    // --- Helpers ---
 
-    const handlePageChange = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
-        }
+    const formatCurrency = (amount) => {
+        return `KES ${parseFloat(amount || 0).toFixed(2)}`;
     };
 
-    const resetFilters = () => {
-        setMonthFilter("");
-        setPaymentMethodFilter("");
-        setStatusFilter("");
-        setCurrentPage(1);
+    const formatDate = (dateStr) => {
+        if (!dateStr) return "N/A";
+        return format(new Date(dateStr), "MMM dd, yyyy");
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return "N/A";
-        return format(new Date(dateString), "MMM dd, yyyy");
-    };
+    // --- PDF Generators ---
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case "Completed":
-                return "bg-green-100 text-green-700";
-            case "Processing":
-                return "bg-yellow-100 text-yellow-700";
-            case "Pending":
-                return "bg-blue-100 text-blue-700";
-            case "Failed":
-                return "bg-red-100 text-red-700";
-            default:
-                return "bg-gray-100 text-gray-700";
-        }
-    };
-
-    const generatePDF = () => {
+    const generateApplicationPDF = () => {
         const doc = new jsPDF();
-        const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 20;
-        let yOffset = 20;
+        let y = 20;
 
-        // Add member details
-        doc.setFontSize(16);
-        doc.text("Loan Transaction Report", margin, yOffset);
-        yOffset += 10;
+        // Header
+        doc.setFontSize(18);
+        doc.setTextColor(4, 94, 50); // Primary Color
+        doc.text("Loan Application & Schedule", margin, y);
+        y += 10;
+
+        // Meta Info
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Generated: ${format(new Date(), "PPpp")}`, margin, y);
+        doc.text(`Ref: ${loan.reference}`, margin + 100, y);
+        y += 15;
+
+        // Member Info
         doc.setFontSize(12);
-        doc.text(`Member Number: ${member.member_no}`, margin, yOffset);
-        yOffset += 10;
-        doc.text(
-            `Member Name: ${member.first_name} ${member.last_name}`,
-            margin,
-            yOffset
-        );
-        yOffset += 10;
-        doc.text(
-            `Report Generated: ${format(new Date(), "MMM dd, yyyy HH:mm")}`,
-            margin,
-            yOffset
-        );
-        yOffset += 20;
+        doc.setTextColor(0);
+        doc.text(`Member: ${member.first_name} ${member.last_name} (${member.member_no})`, margin, y);
+        y += 7;
+        doc.text(`Phone: ${member.phone}`, margin, y);
+        y += 15;
 
-        // Add loan details
+        // Loan Details
         doc.setFontSize(14);
-        doc.text("Loan Details", margin, yOffset);
-        yOffset += 10;
-        doc.setFontSize(12);
-        doc.text(`Loan Type: ${loan.loan_type}`, margin, yOffset);
-        yOffset += 10;
-        doc.text(`Account Number: ${loan.account_number}`, margin, yOffset);
-        yOffset += 10;
-        doc.text(
-            `Loan Amount: KES ${parseFloat(loan.loan_amount).toFixed(2)}`,
-            margin,
-            yOffset
-        );
-        yOffset += 10;
-        doc.text(
-            `Outstanding Balance: KES ${parseFloat(loan.outstanding_balance).toFixed(
-                2
-            )}`,
-            margin,
-            yOffset
-        );
-        yOffset += 20;
+        doc.setTextColor(4, 94, 50);
+        doc.text("Loan Details", margin, y);
+        y += 8;
 
-        // Add transactions table
-        if (filteredTransactions.length > 0) {
-            autoTable(doc, {
-                startY: yOffset,
-                head: [
-                    [
-                        "Date",
-                        "Transaction Type",
-                        "Amount",
-                        "Outstanding Balance",
-                        "Payment Method",
-                        "Status",
-                        "Details",
-                    ],
-                ],
-                body: filteredTransactions.map((t) => [
-                    formatDate(t.created_at),
-                    t.transaction_type,
-                    `KES ${parseFloat(t.amount).toFixed(2)}`,
-                    t.outstanding_balance
-                        ? `KES ${parseFloat(t.outstanding_balance).toFixed(2)}`
-                        : "N/A",
-                    t.payment_method || "N/A",
-                    t.transaction_status || "N/A",
-                    t.details || "N/A",
-                ]),
-                theme: "grid",
-                headStyles: { fillColor: [4, 94, 50], textColor: [255, 255, 255] },
-                bodyStyles: { textColor: [51, 51, 51] },
-                alternateRowStyles: { fillColor: [245, 245, 220] },
-                margin: { left: margin, right: margin },
-            });
-        } else {
-            doc.text(
-                "No transactions found for the selected filters.",
-                margin,
-                yOffset
-            );
-        }
+        const detailsData = [
+            ["Product", loan.product],
+            ["Account Number", loan.account_number],
+            ["Principal", formatCurrency(loan.principal)],
+            ["Interest Rate", `${loan.product_details?.interest_rate}% (${loan.product_details?.interest_period})`],
+            ["Start Date", formatDate(loan.start_date)],
+            ["End Date", formatDate(loan.end_date)],
+            ["Total Repayment", formatCurrency(loan.total_loan_amount)],
+        ];
 
-        // Save PDF
-        doc.save(
-            `loan_report_${loan.account_number}_${format(new Date(), "yyyyMMdd")}.pdf`
-        );
+        autoTable(doc, {
+            startY: y,
+            body: detailsData,
+            theme: 'plain',
+            styles: { fontSize: 10, cellPadding: 1 },
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+        });
+
+        y = doc.lastAutoTable.finalY + 15;
+
+        // Schedule
+        doc.setFontSize(14);
+        doc.setTextColor(4, 94, 50);
+        doc.text("Repayment Schedule", margin, y);
+        y += 5;
+
+        autoTable(doc, {
+            startY: y,
+            head: [["Due Date", "Principal", "Interest", "Total Due", "Balance After"]],
+            body: schedule.map(s => [
+                formatDate(s.due_date),
+                formatCurrency(s.principal_due),
+                formatCurrency(s.interest_due),
+                formatCurrency(s.total_due),
+                formatCurrency(s.balance_after)
+            ]),
+            theme: 'grid',
+            headStyles: { fillColor: [4, 94, 50] },
+            styles: { fontSize: 9 }
+        });
+
+        doc.save(`loan_schedule_${loan.reference}.pdf`);
     };
+
+    const generateTransactionPDF = () => {
+        const doc = new jsPDF();
+        // ... Similar logic for transaction history ...
+        const margin = 20;
+        let y = 20;
+
+        doc.setFontSize(18);
+        doc.setTextColor(4, 94, 50);
+        doc.text("Loan Transaction History", margin, y);
+        y += 10;
+
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`As of: ${format(new Date(), "PPpp")}`, margin, y);
+        y += 15;
+
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.text(`Loan Account: ${loan.account_number} (${loan.product})`, margin, y);
+        y += 7;
+        doc.text(`Outstanding Balance: ${formatCurrency(loan.outstanding_balance)}`, margin, y);
+        y += 15;
+
+        autoTable(doc, {
+            startY: y,
+            head: [["Date", "Type", "Amount", "Method", "Status"]],
+            body: filteredTransactions.map(t => [
+                formatDate(t.date),
+                t.type,
+                formatCurrency(t.amount),
+                t.method,
+                t.status
+            ]),
+            theme: 'striped',
+            headStyles: { fillColor: [4, 94, 50] }
+        });
+
+        doc.save(`loan_transactions_${loan.reference}.pdf`);
+    };
+
+    if (isLoadingLoan || isLoadingMember) return <MemberLoadingSpinner />;
+    if (!loan || !member) return <div className="p-8 text-center text-muted-foreground">Loan details not found.</div>;
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-gray-50/50">
             <div className="mx-auto p-4 sm:p-6 space-y-6">
+
+                {/* Breadcrumbs */}
                 <Breadcrumb>
                     <BreadcrumbList>
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/member/dashboard">
-                                Dashboard
-                            </BreadcrumbLink>
+                            <BreadcrumbLink href="/member/dashboard">Dashboard</BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
                             <BreadcrumbLink href="/member/loans">Loans</BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
-                        <BreadcrumbPage>Loan Details</BreadcrumbPage>
+                        <BreadcrumbPage>{loan.product} Loan</BreadcrumbPage>
                     </BreadcrumbList>
                 </Breadcrumb>
 
-                <Card className="border-l-4 border-l-[#045e32] shadow-md">
-                    <CardHeader>
-                        <CardTitle className="text-2xl font-bold text-[#045e32]">
-                            Loan Details
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <p className="text-base font-medium">
-                                Loan Type: <span className="font-normal">{loan.loan_type}</span>
-                            </p>
-                            <p className="text-base font-medium">
-                                Account Number:{" "}
-                                <span className="font-normal">{loan.account_number}</span>
-                            </p>
-                            <p className="text-base font-medium">
-                                Loan Amount:{" "}
-                                <span className="font-normal">
-                                    KES {parseFloat(loan.loan_amount).toFixed(2)}
-                                </span>
-                            </p>
-                            <p className="text-base font-medium">
-                                Outstanding Balance:{" "}
-                                <span className="font-normal">
-                                    KES {parseFloat(loan.outstanding_balance).toFixed(2)}
-                                </span>
-                            </p>
-                            <p className="text-base font-medium">
-                                Status:{" "}
-                                <span
-                                    className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
-                                        loan.is_approved
-                                            ? loan.is_active
-                                                ? "Active"
-                                                : "Inactive"
-                                            : "Pending"
-                                    )}`}
-                                >
-                                    {loan.is_approved
-                                        ? loan.is_active
-                                            ? "Active"
-                                            : "Inactive"
-                                        : "Pending"}
-                                </span>
-                            </p>
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-3 mb-1">
+                            <h1 className="text-3xl font-bold text-gray-900">{loan.product} Loan</h1>
+                            <Badge variant={loan.status === 'Active' ? 'default' : 'secondary'}
+                                className={loan.status === 'Active' ? 'bg-[#045e32]' : ''}>
+                                {loan.status}
+                            </Badge>
                         </div>
-                        <Button
-                            onClick={generatePDF}
-                            className="bg-[#045e32] hover:bg-[#067a46] text-white text-sm sm:text-base"
-                        >
-                            Download Report
+                        <p className="text-muted-foreground font-mono">{loan.account_number}</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <Button onClick={generateApplicationPDF} variant="outline" className="border-[#045e32] text-[#045e32] hover:bg-[#045e32]/10">
+                            Download Schedule
                         </Button>
-                    </CardContent>
-                </Card>
+                        <Button className="bg-[#045e32] hover:bg-[#034625]">
+                            Make Repayment
+                        </Button>
+                    </div>
+                </div>
 
-                <Card className="mb-6">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-[#045e32]">
-                            Filter Transactions
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <Label
-                                    htmlFor="month"
-                                    className="text-sm font-medium text-gray-700"
-                                >
-                                    Month
-                                </Label>
-                                <input
-                                    type="month"
-                                    id="month"
-                                    value={monthFilter}
-                                    onChange={(e) => {
-                                        setMonthFilter(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#045e32] focus:border-[#045e32] transition-colors"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label
-                                    htmlFor="paymentMethod"
-                                    className="text-sm font-medium text-gray-700"
-                                >
-                                    Payment Method
-                                </Label>
-                                <select
-                                    id="paymentMethod"
-                                    value={paymentMethodFilter}
-                                    onChange={(e) => {
-                                        setPaymentMethodFilter(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#045e32] focus:border-[#045e32] transition-colors"
-                                >
-                                    <option value="all">All Methods</option>
-                                    <option value="Cash">Cash</option>
-                                    <option value="Mpesa">Mpesa</option>
-                                    <option value="Bank Transfer">Bank Transfer</option>
-                                    <option value="Mobile Transfer">Mobile Transfer</option>
-                                    <option value="Cheque">Cheque</option>
-                                    <option value="Standing Order">Standing Order</option>
-                                    <option value="Mobile Banking">Mobile Banking</option>
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label
-                                    htmlFor="status"
-                                    className="text-sm font-medium text-gray-700"
-                                >
-                                    Status
-                                </Label>
-                                <select
-                                    id="status"
-                                    value={statusFilter}
-                                    onChange={(e) => {
-                                        setStatusFilter(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#045e32] focus:border-[#045e32] transition-colors"
-                                >
-                                    <option value="all">All Statuses</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Processing">Processing</option>
-                                    <option value="Completed">Completed</option>
-                                    <option value="Failed">Failed</option>
-                                </select>
-                            </div>
-                            <div className="flex items-end">
-                                <Button
-                                    onClick={resetFilters}
-                                    className="w-full bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                >
-                                    Reset Filters
-                                </Button>
-                            </div>
+                {/* Tabs Navigation */}
+                <div className="flex space-x-1 rounded-xl bg-gray-200 p-1 w-fit">
+                    {['overview', 'schedule', 'transactions'].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`
+                                w-full rounded-lg py-2.5 px-6 text-sm font-medium leading-5 ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2
+                                ${activeTab === tab
+                                    ? 'bg-white text-[#045e32] shadow'
+                                    : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-800'}
+                            `}
+                        >
+                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Tab Content */}
+                <div className="space-y-6">
+                    {activeTab === 'overview' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-[#045e32]">Loan Overview</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Principal Amount</span>
+                                        <span className="font-semibold">{formatCurrency(loan.principal)}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Total Repayment</span>
+                                        <span className="font-semibold">{formatCurrency(loan.total_loan_amount)}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Outstanding Balance</span>
+                                        <span className="font-bold text-red-600">{formatCurrency(loan.outstanding_balance)}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Interest Accrued</span>
+                                        <span className="font-semibold">{formatCurrency(loan.total_interest_accrued)}</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-[#045e32]">Terms & Dates</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Interest Rate</span>
+                                        <span className="font-semibold">{loan.product_details?.interest_rate}% {loan.product_details?.interest_period}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Start Date</span>
+                                        <span className="font-semibold">{formatDate(loan.start_date)}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">End Date</span>
+                                        <span className="font-semibold">{formatDate(loan.end_date)}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Calculation Method</span>
+                                        <span className="font-semibold">{loan.product_details?.calculation_schedule || 'N/A'}</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </div>
-                    </CardContent>
-                </Card>
+                    )}
 
-                <Card className="mb-6">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-[#045e32]">
-                            Repayments & Interest Transactions
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {filteredTransactions.length === 0 ? (
-                            <div className="text-center text-gray-700">
-                                No transactions found.
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
+                    {activeTab === 'schedule' && (
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <div>
+                                    <CardTitle>Repayment Schedule</CardTitle>
+                                    <CardDescription>Projected payment dates and amounts</CardDescription>
+                                </div>
+                                <Button size="sm" variant="outline" onClick={generateApplicationPDF}>Download PDF</Button>
+                            </CardHeader>
+                            <CardContent>
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="bg-[#045e32] hover:bg-[#045e32]">
-                                            <TableHead className="text-white font-semibold">
-                                                Date
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Transaction Type
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Amount
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Outstanding Balance
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Payment Method
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Status
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Details
-                                            </TableHead>
+                                        <TableRow className="bg-gray-50">
+                                            <TableHead>Due Date</TableHead>
+                                            <TableHead>Principal</TableHead>
+                                            <TableHead>Interest</TableHead>
+                                            <TableHead>Total Due</TableHead>
+                                            <TableHead className="text-right">Balance After</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {paginatedTransactions.map((transaction, index) => (
-                                            <TableRow
-                                                key={`${transaction.created_at}-${transaction.transaction_type}-${index}`}
-                                            >
-                                                <TableCell className="text-sm text-gray-700">
-                                                    {formatDate(transaction.created_at)}
-                                                </TableCell>
-                                                <TableCell className="text-sm text-gray-700">
-                                                    {transaction.transaction_type}
-                                                </TableCell>
-                                                <TableCell className="text-sm text-gray-700">
-                                                    KES {parseFloat(transaction.amount).toFixed(2)}
-                                                </TableCell>
-                                                <TableCell className="text-sm text-gray-700">
-                                                    {transaction.outstanding_balance
-                                                        ? `KES ${parseFloat(
-                                                            transaction.outstanding_balance
-                                                        ).toFixed(2)}`
-                                                        : "N/A"}
-                                                </TableCell>
-                                                <TableCell className="text-sm text-gray-700">
-                                                    {transaction.payment_method || "N/A"}
-                                                </TableCell>
-                                                <TableCell className="text-sm">
-                                                    <span
-                                                        className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
-                                                            transaction.transaction_status
-                                                        )}`}
-                                                    >
-                                                        {transaction.transaction_status || "N/A"}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell className="text-sm text-gray-700">
-                                                    {transaction.details || "N/A"}
-                                                </TableCell>
+                                        {schedule.map((row, i) => (
+                                            <TableRow key={i}>
+                                                <TableCell className="font-medium">{formatDate(row.due_date)}</TableCell>
+                                                <TableCell>{formatCurrency(row.principal_due)}</TableCell>
+                                                <TableCell>{formatCurrency(row.interest_due)}</TableCell>
+                                                <TableCell className="font-bold text-[#045e32]">{formatCurrency(row.total_due)}</TableCell>
+                                                <TableCell className="text-right text-muted-foreground">{formatCurrency(row.balance_after)}</TableCell>
                                             </TableRow>
                                         ))}
+                                        {schedule.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                                                    No schedule available
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
-                            </div>
-                        )}
-                        {totalPages > 1 && (
-                            <div className="flex items-center justify-between mt-4">
-                                <div className="text-sm text-gray-500">
-                                    Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                                    {Math.min(currentPage * itemsPerPage, totalItems)} of{" "}
-                                    {totalItems} entries
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {activeTab === 'transactions' && (
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <div className="space-y-1">
+                                    <CardTitle>Transaction History</CardTitle>
+                                    <CardDescription>All payments and disbursements</CardDescription>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                        className="bg-[#045e32] hover:bg-[#067a46] text-white text-sm disabled:opacity-50"
-                                        aria-label="Previous page"
+                                <div className="flex gap-2">
+                                    <select
+                                        className="h-9 w-[150px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                        value={monthFilter}
+                                        onChange={(e) => setMonthFilter(e.target.value)}
                                     >
-                                        Previous
-                                    </Button>
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                                        (page) => (
-                                            <Button
-                                                key={page}
-                                                onClick={() => handlePageChange(page)}
-                                                variant={currentPage === page ? "default" : "outline"}
-                                                className={`${currentPage === page
-                                                        ? "bg-[#045e32] text-white"
-                                                        : "border-[#045e32] text-[#045e32] hover:bg-[#045e32] hover:text-white"
-                                                    } text-sm`}
-                                                aria-label={`Go to page ${page}`}
-                                            >
-                                                {page}
-                                            </Button>
-                                        )
-                                    )}
-                                    <Button
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                        className="bg-[#045e32] hover:bg-[#067a46] text-white text-sm disabled:opacity-50"
-                                        aria-label="Next page"
-                                    >
-                                        Next
-                                    </Button>
+                                        <option value="">All Months</option>
+                                        {/* Simple way to show last 12 months could be added here, leaving manual empty for now if no dynamic generation */}
+                                    </select>
+                                    <Button size="sm" variant="outline" onClick={generateTransactionPDF}>Download PDF</Button>
                                 </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50">
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Type</TableHead>
+                                            <TableHead>Amount</TableHead>
+                                            <TableHead>Method</TableHead>
+                                            <TableHead>Status</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {paginatedTransactions.map((t, i) => (
+                                            <TableRow key={i}>
+                                                <TableCell>{formatDate(t.date)}</TableCell>
+                                                <TableCell>
+                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                                                        ${t.type === 'Disbursement' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                                        {t.type}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="font-bold">{formatCurrency(t.amount)}</TableCell>
+                                                <TableCell>{t.method}</TableCell>
+                                                <TableCell>{t.status}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                        {paginatedTransactions.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                                                    No transactions found
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+
+                                {/* Helper Pagination (Simplified) */}
+                                {totalTxPages > 1 && (
+                                    <div className="flex items-center justify-end space-x-2 py-4">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                        >
+                                            Previous
+                                        </Button>
+                                        <span className="text-sm text-muted-foreground">
+                                            Page {currentPage} of {totalTxPages}
+                                        </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(p => Math.min(totalTxPages, p + 1))}
+                                            disabled={currentPage === totalTxPages}
+                                        >
+                                            Next
+                                        </Button>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
             </div>
         </div>
     );

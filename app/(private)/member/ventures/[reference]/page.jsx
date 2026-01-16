@@ -7,7 +7,7 @@ import { useFetchVentureDetail } from "@/hooks/ventures/actions";
 import { useFetchMember } from "@/hooks/members/actions";
 import MemberLoadingSpinner from "@/components/general/MemberLoadingSpinner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Table,
     TableBody,
@@ -16,7 +16,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -31,9 +31,9 @@ import autoTable from "jspdf-autotable";
 
 function VentureDetail() {
     const { reference } = useParams();
+    const [activeTab, setActiveTab] = useState("overview");
     const [paymentModal, setPaymentModal] = useState(false);
     const [monthFilter, setMonthFilter] = useState("");
-    const [methodFilter, setMethodFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -43,60 +43,50 @@ function VentureDetail() {
         data: venture,
         refetch: refetchVenture,
     } = useFetchVentureDetail(reference);
+
     const {
         isLoading: isLoadingMember,
         data: member,
         refetch: refetchMember,
     } = useFetchMember();
 
-    // Combine deposits and payments
+    // --- Computed Data ---
     const allTransactions = useMemo(() => {
         if (!venture) return [];
         const deposits = (venture.deposits || []).map((deposit) => ({
             ...deposit,
-            transaction_type: "Deposit",
+            type: "Deposit",
             balance: venture.balance,
-            payment_method: deposit.payment_method || "N/A",
-            transaction_status: deposit.transaction_status || "Completed",
-            details: "N/A",
+            method: deposit.payment_method || "N/A",
+            status: deposit.transaction_status || "Completed",
+            date: deposit.created_at
         }));
         const payments = (venture.payments || []).map((payment) => ({
             ...payment,
-            transaction_type: "Payment",
+            type: "Payment",
             balance: venture.balance,
-            payment_method: payment.payment_method || "N/A",
-            transaction_status: payment.transaction_status || "Completed",
-            details: "N/A",
+            method: payment.payment_method || "N/A",
+            status: payment.transaction_status || "Completed",
+            date: payment.created_at
         }));
         return [...deposits, ...payments].sort(
-            (a, b) => new Date(b.created_at) - new Date(a.created_at)
+            (a, b) => new Date(b.date) - new Date(a.date)
         );
     }, [venture]);
 
-    // Filter transactions
     const filteredTransactions = useMemo(() => {
-        return allTransactions.filter((transaction) => {
-            const transactionDate = new Date(transaction.created_at);
+        return allTransactions.filter((t) => {
+            const tDate = new Date(t.date);
             if (monthFilter) {
                 const [year, month] = monthFilter.split("-").map(Number);
-                const startOfSelectedMonth = startOfMonth(new Date(year, month - 1));
-                const endOfSelectedMonth = endOfMonth(new Date(year, month - 1));
-                if (
-                    !isWithinInterval(transactionDate, {
-                        start: startOfSelectedMonth,
-                        end: endOfSelectedMonth,
-                    })
-                ) {
-                    return false;
-                }
+                const start = startOfMonth(new Date(year, month - 1));
+                const end = endOfMonth(new Date(year, month - 1));
+                if (!isWithinInterval(tDate, { start, end })) return false;
             }
-            if (methodFilter && transaction.payment_method !== methodFilter)
-                return false;
-            if (statusFilter && transaction.transaction_status !== statusFilter)
-                return false;
+            if (statusFilter && t.status !== statusFilter) return false;
             return true;
         });
-    }, [allTransactions, monthFilter, methodFilter, statusFilter]);
+    }, [allTransactions, monthFilter, statusFilter]);
 
     // Pagination
     const totalItems = filteredTransactions.length;
@@ -106,420 +96,230 @@ function VentureDetail() {
         currentPage * itemsPerPage
     );
 
-    // Early returns after all Hooks
-    if (isLoadingVenture || isLoadingMember) return <MemberLoadingSpinner />;
-    if (!venture || !member) return <div>No venture or member data found.</div>;
+    // --- Helpers ---
+    const formatCurrency = (amount) => `KES ${parseFloat(amount || 0).toFixed(2)}`;
+    const formatDate = (dateStr) => dateStr ? format(new Date(dateStr), "MMM dd, yyyy") : "N/A";
 
-    const handlePageChange = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
-        }
-    };
-
-    const resetFilters = () => {
-        setMonthFilter("");
-        setMethodFilter("");
-        setStatusFilter("");
-        setCurrentPage(1);
-    };
-
-    const formatDate = (dateString) => {
-        if (!dateString) return "N/A";
-        return format(new Date(dateString), "MMM dd, yyyy");
-    };
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case "Completed":
-                return "bg-green-100 text-green-700";
-            case "Processing":
-                return "bg-yellow-100 text-yellow-700";
-            case "Pending":
-                return "bg-blue-100 text-blue-700";
-            case "Failed":
-                return "bg-red-100 text-red-700";
-            default:
-                return "bg-gray-100 text-gray-700";
-        }
-    };
-
-    const generatePDF = () => {
+    // --- PDF Generator ---
+    const generateTransactionPDF = () => {
         const doc = new jsPDF();
-        const pageWidth = doc.internal.pageSize.getWidth();
         const margin = 20;
-        let yOffset = 20;
+        let y = 20;
 
-        // Add member details
-        doc.setFontSize(16);
-        doc.text("Venture Transaction Report", margin, yOffset);
-        yOffset += 10;
+        doc.setFontSize(18);
+        doc.setTextColor(4, 94, 50);
+        doc.text("Venture Transaction Report", margin, y);
+        y += 10;
+
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Generated: ${format(new Date(), "PPpp")}`, margin, y);
+        y += 15;
+
         doc.setFontSize(12);
-        doc.text(`Member Number: ${member.member_no}`, margin, yOffset);
-        yOffset += 10;
-        doc.text(
-            `Member Name: ${member.first_name} ${member.last_name}`,
-            margin,
-            yOffset
-        );
-        yOffset += 10;
-        doc.text(
-            `Report Generated: ${format(new Date(), "MMM dd, yyyy HH:mm")}`,
-            margin,
-            yOffset
-        );
-        yOffset += 20;
+        doc.setTextColor(0);
+        doc.text(`Member: ${member.first_name} ${member.last_name}`, margin, y);
+        y += 6;
+        doc.text(`Venture Type: ${venture.venture_type}`, margin, y);
+        y += 6;
+        doc.text(`Account Number: ${venture.account_number}`, margin, y);
+        y += 15;
 
-        // Add venture details
-        doc.setFontSize(14);
-        doc.text("Venture Details", margin, yOffset);
-        yOffset += 10;
-        doc.setFontSize(12);
-        doc.text(`Venture Type: ${venture.venture_type}`, margin, yOffset);
-        yOffset += 10;
-        doc.text(`Account Number: ${venture.account_number}`, margin, yOffset);
-        yOffset += 10;
-        doc.text(
-            `Balance: KES ${parseFloat(venture.balance).toFixed(2)}`,
-            margin,
-            yOffset
-        );
-        yOffset += 10;
-        doc.text(
-            `Status: ${venture.is_active ? "Active" : "Inactive"}`,
-            margin,
-            yOffset
-        );
-        yOffset += 20;
+        autoTable(doc, {
+            startY: y,
+            head: [["Date", "Type", "Amount", "Method", "Status"]],
+            body: filteredTransactions.map(t => [
+                formatDate(t.date),
+                t.type,
+                formatCurrency(t.amount),
+                t.method,
+                t.status
+            ]),
+            theme: 'striped',
+            headStyles: { fillColor: [4, 94, 50] }
+        });
 
-        // Add transactions table
-        if (filteredTransactions.length > 0) {
-            autoTable(doc, {
-                startY: yOffset,
-                head: [
-                    [
-                        "Date",
-                        "Transaction Type",
-                        "Amount",
-                        "Balance",
-                        "Payment Method",
-                        "Status",
-                        "Details",
-                    ],
-                ],
-                body: filteredTransactions.map((t) => [
-                    formatDate(t.created_at),
-                    t.transaction_type,
-                    `KES ${parseFloat(t.amount).toFixed(2)}`,
-                    t.balance ? `KES ${parseFloat(t.balance).toFixed(2)}` : "N/A",
-                    t.payment_method || "N/A",
-                    t.transaction_status || "N/A",
-                    t.details || "N/A",
-                ]),
-                theme: "grid",
-                headStyles: { fillColor: [4, 94, 50], textColor: [255, 255, 255] },
-                bodyStyles: { textColor: [51, 51, 51] },
-                alternateRowStyles: { fillColor: [245, 245, 220] },
-                margin: { left: margin, right: margin },
-            });
-        } else {
-            doc.text(
-                "No transactions found for the selected filters.",
-                margin,
-                yOffset
-            );
-        }
-
-        // Save PDF
-        doc.save(
-            `venture_report_${venture.account_number}_${format(
-                new Date(),
-                "yyyyMMdd"
-            )}.pdf`
-        );
+        doc.save(`venture_report_${venture.account_number}.pdf`);
     };
+
+    if (isLoadingVenture || isLoadingMember) return <MemberLoadingSpinner />;
+    if (!venture || !member) return <div className="p-8 text-center text-muted-foreground">Venture account not found.</div>;
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-gray-50/50">
             <div className="mx-auto p-4 sm:p-6 space-y-6">
+
+                {/* Breadcrumb */}
                 <Breadcrumb>
                     <BreadcrumbList>
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/member/dashboard">
-                                Dashboard
-                            </BreadcrumbLink>
+                            <BreadcrumbLink href="/member/dashboard">Dashboard</BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>{venture?.venture_type}</BreadcrumbPage>
-                        </BreadcrumbItem>
+                        <BreadcrumbPage>{venture.venture_type}</BreadcrumbPage>
                     </BreadcrumbList>
                 </Breadcrumb>
 
-                <Card className="border-l-4 border-l-[#045e32] shadow-md">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-2xl font-bold text-[#045e32]">
-                            {venture?.venture_type}
-                        </CardTitle>
-                        <Button
-                            size="sm"
-                            className="bg-[#045e32] hover:bg-[#022007] text-white"
-                            onClick={() => setPaymentModal(true)}
-                        >
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-3 mb-1">
+                            <h1 className="text-3xl font-bold text-gray-900">{venture.venture_type}</h1>
+                            <Badge variant={venture.is_active ? 'default' : 'secondary'}
+                                className={venture.is_active ? 'bg-[#045e32]' : ''}>
+                                {venture.is_active ? "Active" : "Inactive"}
+                            </Badge>
+                        </div>
+                        <p className="text-muted-foreground font-mono">{venture.account_number}</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <Button className="bg-[#045e32] hover:bg-[#034625]" onClick={() => setPaymentModal(true)}>
                             Make Payment
                         </Button>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <p className="text-base font-medium">
-                                Account Number:{" "}
-                                <span className="font-normal">{venture?.account_number}</span>
-                            </p>
-                            <p className="text-base font-medium">
-                                Balance:{" "}
-                                <span className="font-normal text-[#045e32]">
-                                    KES {parseFloat(venture?.balance).toFixed(2)}
-                                </span>
-                            </p>
-                            <p className="text-base font-medium">
-                                Status:{" "}
-                                <span
-                                    className={`font-normal ${venture?.is_active ? "text-green-600" : "text-red-600"
-                                        }`}
-                                >
-                                    {venture?.is_active ? "Active" : "Inactive"}
-                                </span>
-                            </p>
-                            <p className="text-base font-medium">
-                                Created At:{" "}
-                                <span className="font-normal">
-                                    {format(new Date(venture?.created_at), "PPP")}
-                                </span>
-                            </p>
-                            <p className="text-base font-medium">
-                                Venture Type:{" "}
-                                <span className="font-normal">{venture?.venture_type}</span>
-                            </p>
-                        </div>
-                        <Button
-                            onClick={generatePDF}
-                            className="bg-[#045e32] hover:bg-[#067a46] text-white text-sm sm:text-base"
+                    </div>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex space-x-1 rounded-xl bg-gray-200 p-1 w-fit">
+                    {['overview', 'transactions'].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`
+                                w-full rounded-lg py-2.5 px-6 text-sm font-medium leading-5 ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2
+                                ${activeTab === tab
+                                    ? 'bg-white text-[#045e32] shadow'
+                                    : 'text-gray-600 hover:bg-white/[0.12] hover:text-gray-800'}
+                            `}
                         >
-                            Download Report
-                        </Button>
-                    </CardContent>
-                </Card>
+                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        </button>
+                    ))}
+                </div>
 
-                <Card className="mb-6">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-[#045e32]">
-                            Filter Transactions
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <Label
-                                    htmlFor="month"
-                                    className="text-sm font-medium text-gray-700"
-                                >
-                                    Month
-                                </Label>
-                                <input
-                                    type="month"
-                                    id="month"
-                                    value={monthFilter}
-                                    onChange={(e) => {
-                                        setMonthFilter(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#045e32] focus:border-[#045e32] transition-colors"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label
-                                    htmlFor="method"
-                                    className="text-sm font-medium text-gray-700"
-                                >
-                                    Payment Method
-                                </Label>
-                                <select
-                                    id="method"
-                                    value={methodFilter}
-                                    onChange={(e) => {
-                                        setMethodFilter(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#045e32] focus:border-[#045e32] transition-colors"
-                                >
-                                    <option value="all">All Methods</option>
-                                    <option value="Cash">Cash</option>
-                                    <option value="Mpesa">Mpesa</option>
-                                    <option value="Bank Transfer">Bank Transfer</option>
-                                    <option value="Mobile Transfer">Mobile Transfer</option>
-                                    <option value="Cheque">Cheque</option>
-                                    <option value="Standing Order">Standing Order</option>
-                                    <option value="Mobile Banking">Mobile Banking</option>
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label
-                                    htmlFor="status"
-                                    className="text-sm font-medium text-gray-700"
-                                >
-                                    Status
-                                </Label>
-                                <select
-                                    id="status"
-                                    value={statusFilter}
-                                    onChange={(e) => {
-                                        setStatusFilter(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#045e32] focus:border-[#045e32] transition-colors"
-                                >
-                                    <option value="all">All Statuses</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Processing">Processing</option>
-                                    <option value="Completed">Completed</option>
-                                    <option value="Failed">Failed</option>
-                                </select>
-                            </div>
-                            <div className="flex items-end">
-                                <Button
-                                    onClick={resetFilters}
-                                    className="w-full bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                >
-                                    Reset Filters
-                                </Button>
-                            </div>
+                {/* Content */}
+                <div className="space-y-6">
+                    {activeTab === 'overview' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-[#045e32]">Account Overview</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Current Balance</span>
+                                        <span className="font-bold text-2xl text-[#045e32]">{formatCurrency(venture.balance)}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Interest Rate</span>
+                                        <span className="font-semibold">{venture.venture_type_details?.interest_rate}% p.a</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-[#045e32]">Account Details</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Venture Name</span>
+                                        <span className="font-semibold">{venture.venture_type_details?.name}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Date Opened</span>
+                                        <span className="font-semibold">{formatDate(venture.created_at)}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Last Updated</span>
+                                        <span className="font-semibold">{formatDate(venture.updated_at)}</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </div>
-                    </CardContent>
-                </Card>
+                    )}
 
-                <Card className="mb-6">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-[#045e32]">
-                            All Transactions
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {filteredTransactions.length === 0 ? (
-                            <div className="text-center text-gray-700">
-                                No transactions found.
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
+                    {activeTab === 'transactions' && (
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <div className="space-y-1">
+                                    <CardTitle>Transaction History</CardTitle>
+                                    <CardDescription>Recent payments and deposits</CardDescription>
+                                </div>
+                                <div className="flex gap-2">
+                                    <select
+                                        className="h-9 w-[150px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                        value={monthFilter}
+                                        onChange={(e) => setMonthFilter(e.target.value)}
+                                    >
+                                        <option value="">All Months</option>
+                                    </select>
+                                    <Button size="sm" variant="outline" onClick={generateTransactionPDF}>Download PDF</Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="bg-[#045e32] hover:bg-[#045e32]">
-                                            <TableHead className="text-white font-semibold">
-                                                Date
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Transaction Type
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Amount
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Balance
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Payment Method
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Status
-                                            </TableHead>
-                                            <TableHead className="text-white font-semibold">
-                                                Details
-                                            </TableHead>
+                                        <TableRow className="bg-gray-50">
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Type</TableHead>
+                                            <TableHead>Amount</TableHead>
+                                            <TableHead>Method</TableHead>
+                                            <TableHead>Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {paginatedTransactions.map((transaction, index) => (
-                                            <TableRow
-                                                key={`${transaction.created_at}-${transaction.transaction_type}-${index}`}
-                                            >
-                                                <TableCell className="text-sm text-gray-700">
-                                                    {formatDate(transaction.created_at)}
-                                                </TableCell>
-                                                <TableCell className="text-sm text-gray-700">
-                                                    {transaction.transaction_type}
-                                                </TableCell>
-                                                <TableCell className="text-sm text-gray-700">
-                                                    KES {parseFloat(transaction.amount).toFixed(2)}
-                                                </TableCell>
-                                                <TableCell className="text-sm text-gray-700">
-                                                    {transaction.balance
-                                                        ? `KES ${parseFloat(transaction.balance).toFixed(2)}`
-                                                        : "N/A"}
-                                                </TableCell>
-                                                <TableCell className="text-sm text-gray-700">
-                                                    {transaction.payment_method || "N/A"}
-                                                </TableCell>
-                                                <TableCell className="text-sm">
-                                                    <span
-                                                        className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
-                                                            transaction.transaction_status
-                                                        )}`}
-                                                    >
-                                                        {transaction.transaction_status || "N/A"}
+                                        {paginatedTransactions.map((t, i) => (
+                                            <TableRow key={i}>
+                                                <TableCell>{formatDate(t.date)}</TableCell>
+                                                <TableCell>
+                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                                                        ${t.type === 'Payment' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                                        {t.type}
                                                     </span>
                                                 </TableCell>
-                                                <TableCell className="text-sm text-gray-700">
-                                                    {transaction.details || "N/A"}
-                                                </TableCell>
+                                                <TableCell className="font-medium">{formatCurrency(t.amount)}</TableCell>
+                                                <TableCell>{t.method}</TableCell>
+                                                <TableCell>{t.status}</TableCell>
                                             </TableRow>
                                         ))}
+                                        {paginatedTransactions.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                                                    No transactions found
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
-                            </div>
-                        )}
-                        {totalPages > 1 && (
-                            <div className="flex items-center justify-between mt-4">
-                                <div className="text-sm text-gray-500">
-                                    Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                                    {Math.min(currentPage * itemsPerPage, totalItems)} of{" "}
-                                    {totalItems} entries
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                        className="bg-[#045e32] hover:bg-[#067a46] text-white text-sm disabled:opacity-50"
-                                        aria-label="Previous page"
-                                    >
-                                        Previous
-                                    </Button>
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                                        (page) => (
-                                            <Button
-                                                key={page}
-                                                onClick={() => handlePageChange(page)}
-                                                variant={currentPage === page ? "default" : "outline"}
-                                                className={`${currentPage === page
-                                                        ? "bg-[#045e32] text-white"
-                                                        : "border-[#045e32] text-[#045e32] hover:bg-[#045e32] hover:text-white"
-                                                    } text-sm`}
-                                                aria-label={`Go to page ${page}`}
-                                            >
-                                                {page}
-                                            </Button>
-                                        )
-                                    )}
-                                    <Button
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                        className="bg-[#045e32] hover:bg-[#067a46] text-white text-sm disabled:opacity-50"
-                                        aria-label="Next page"
-                                    >
-                                        Next
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+
+                                {totalPages > 1 && (
+                                    <div className="flex items-center justify-end space-x-2 py-4">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                        >
+                                            Previous
+                                        </Button>
+                                        <span className="text-sm text-muted-foreground">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            Next
+                                        </Button>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
 
                 <CreateVenturePayment
                     isOpen={paymentModal}
