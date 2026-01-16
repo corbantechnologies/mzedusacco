@@ -32,13 +32,13 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { AlertCircle, CheckCircle2, FileText, Pencil, X, Send } from "lucide-react";
+import { AlertCircle, CheckCircle2, FileText, Pencil, X, Send, ThumbsUp, ThumbsDown, Edit } from "lucide-react";
 import { MemberUpdateLoanApplication } from "@/forms/loanapplications/MemberUpdateLoanApplication";
-import { submitForAmendment } from "@/services/loanapplications";
+import { submitForAmendment, approveLoanApplication, rejectLoanApplication } from "@/services/loanapplications";
 import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
 import toast from "react-hot-toast";
 
-export default function LoanApplicationDetail({ params }) {
+export default function AdminLoanApplicationDetail({ params }) {
     const { reference } = use(params)
     const { data: application, isLoading, refetch } = useFetchLoanApplicationDetail(
         reference
@@ -47,19 +47,54 @@ export default function LoanApplicationDetail({ params }) {
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // TODO: Verify how to identify "My Application" (e.g., check created_by vs current user)
+    // For now, assuming false to show Admin actions by default, or true if status requires member action
+    // In a real scenario, this should be: const isOwnApplication = application?.created_by === currentUser.id;
+    const isOwnApplication = false;
+
     const handleSubmitForAmendment = async () => {
         setIsSubmitting(true);
         try {
             await submitForAmendment(reference, token);
-            toast.success("Application submitted to SACCO successfully!");
+            toast.success("Application submitted for amendment!");
             refetch();
         } catch (error) {
             console.error("Submission failed", error);
-            toast.error("Failed to submit application. Please try again.");
+            toast.error("Failed to submit. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    const handleApprove = async () => {
+        if (!confirm("Are you sure you want to approve this loan application?")) return;
+        setIsSubmitting(true);
+        try {
+            await approveLoanApplication(reference, token);
+            toast.success("Loan Application Approved!");
+            refetch();
+        } catch (error) {
+            console.error("Approval failed", error);
+            toast.error("Failed to approve application.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
+
+    const handleReject = async () => {
+        if (!confirm("Are you sure you want to decline this loan application?")) return;
+        setIsSubmitting(true);
+        try {
+            await rejectLoanApplication(reference, token);
+            toast.success("Loan Application Declined.");
+            refetch();
+        } catch (error) {
+            console.error("Decline failed", error);
+            toast.error("Failed to decline application.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
 
     const schedule = useMemo(() => {
         return application?.projection?.schedule || [];
@@ -81,6 +116,7 @@ export default function LoanApplicationDetail({ params }) {
             case "Amended":
                 return "bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-200";
             case "Ready for Submission":
+            case "Submitted":
                 return "bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-200";
             default:
                 return "bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-200";
@@ -94,11 +130,11 @@ export default function LoanApplicationDetail({ params }) {
                 <Breadcrumb>
                     <BreadcrumbList>
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/member/dashboard">Dashboard</BreadcrumbLink>
+                            <BreadcrumbLink href="/sacco-admin/dashboard">Dashboard</BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/member/loan-applications">
+                            <BreadcrumbLink href="/sacco-admin/loan-applications">
                                 Loan Applications
                             </BreadcrumbLink>
                         </BreadcrumbItem>
@@ -117,41 +153,84 @@ export default function LoanApplicationDetail({ params }) {
                             
                         </div>
                         <p className="text-muted-foreground font-mono mt-1">
-                            Ref: {application.reference}
+                            Ref: {application.reference} {application.member ? ` | Member: ${application.member.name || application.created_by}` : ''}
                         </p>
                     </div>
 
-                    {/* Action Buttons based on Status */}
+                    {/* Action Buttons */}
                     <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                         <Badge className={getStatusColor(application.status)} variant="outline">
                             {application.status}
                         </Badge>
-                        {application.status === 'Pending' && (
+
+                        {/* Logic for Own Application (Member Actions) */}
+                        {isOwnApplication && (
                             <>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setIsUpdateModalOpen(true)}
-                                    className="border-[#045e32] text-[#045e32] hover:bg-[#045e32]/10 w-full sm:w-auto"
-                                >
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Update Application
-                                </Button>
-                                <Button
-                                    onClick={handleSubmitForAmendment}
-                                    disabled={isSubmitting}
-                                    className="bg-[#045e32] hover:bg-[#034625] w-full sm:w-auto"
-                                >
-                                    {isSubmitting ? <MemberLoadingSpinner className="h-4 w-4 mr-2" /> : <Send className="mr-2 h-4 w-4" />}
-                                    Submit for Amendment
-                                </Button>
+                                {application.status === 'Pending' && (
+                                    <>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setIsUpdateModalOpen(true)}
+                                            className="border-[#045e32] text-[#045e32] hover:bg-[#045e32]/10 w-full sm:w-auto"
+                                        >
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            Update
+                                        </Button>
+                                        <Button
+                                            onClick={handleSubmitForAmendment}
+                                            disabled={isSubmitting}
+                                            className="bg-[#045e32] hover:bg-[#034625] w-full sm:w-auto"
+                                        >
+                                            {isSubmitting ? <MemberLoadingSpinner className="h-4 w-4 mr-2" /> : <Send className="mr-2 h-4 w-4" />}
+                                            Submit for Amendment
+                                        </Button>
+                                    </>
+                                )}
+                                {application.status === 'Amended' && (
+                                    <>
+                                        <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto">Reject</Button>
+                                        <Button className="bg-[#045e32] hover:bg-[#034625] w-full sm:w-auto">Accept Amendment</Button>
+                                    </>
+                                )}
                             </>
                         )}
-                        {application.status === 'Amended' && (
+
+                        {/* Logic for Other Applications (Admin Actions) */}
+                        {!isOwnApplication && (
                             <>
-                                <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto">Reject</Button>
-                                <Button className="bg-[#045e32] hover:bg-[#034625] w-full sm:w-auto">Accept Amendment</Button>
+                                {application.status === 'Submitted' && (
+                                    <>
+                                        <Button
+                                            onClick={handleReject}
+                                            disabled={isSubmitting}
+                                            variant="destructive"
+                                            className="w-full sm:w-auto"
+                                        >
+                                            <ThumbsDown className="mr-2 h-4 w-4" />
+                                            Decline
+                                        </Button>
+                                        <Button
+                                            onClick={handleApprove}
+                                            disabled={isSubmitting}
+                                            className="bg-[#045e32] hover:bg-[#034625] w-full sm:w-auto"
+                                        >
+                                            <ThumbsUp className="mr-2 h-4 w-4" />
+                                            Approve
+                                        </Button>
+                                    </>
+                                )}
+                                {application.status === 'Ready for Amendment' && (
+                                    <Button
+                                        disabled={isSubmitting} // Placeholder for Amend Action
+                                        className="bg-amber-600 hover:bg-amber-700 w-full sm:w-auto"
+                                    >
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Amend Application
+                                    </Button>
+                                )}
                             </>
                         )}
+
                     </div>
                 </div>
 
@@ -198,7 +277,7 @@ export default function LoanApplicationDetail({ params }) {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg">Projected Repayment Schedule</CardTitle>
-                                <CardDescription>Estimated breakdown of your payments</CardDescription>
+                                <CardDescription>Estimated breakdown of payments</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0 sm:p-6">
                                 <div className="overflow-x-auto">
@@ -298,8 +377,8 @@ export default function LoanApplicationDetail({ params }) {
                     </div>
                 </div>
 
-                {/* Update Modal */}
-                {isUpdateModalOpen && (
+                {/* Edit Modal (reused from member for now if Own Application) */}
+                {isUpdateModalOpen && isOwnApplication && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                         <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
                             <div className="flex items-center justify-between p-6 border-b">

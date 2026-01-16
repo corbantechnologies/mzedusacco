@@ -15,54 +15,10 @@ function SaccoAdminNavbar() {
       <header className="bg-[#ea1315] text-white sticky top-0 z-50">
         <div className="mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl md:text-2xl font-bold">Mwanda Mzedu SACCO</h1>
-          <nav className="hidden md:flex gap-6 items-center">
-            <Link
-              href="/sacco-admin/dashboard"
-              className="hover:underline text-base"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/sacco-admin/personal"
-              className="hover:underline text-base"
-            >
-              Personal
-            </Link>
-            <Link
-              href="/sacco-admin/members"
-              className="hover:underline text-base"
-            >
-              Members
-            </Link>
-            <Link
-              href="/sacco-admin/transact"
-              className="hover:underline text-base"
-            >
-              Transact
-            </Link>
-            <Link
-              href="/sacco-admin/withdrawals"
-              className="hover:underline text-base"
-            >
-              Withdrawals
-            </Link>
-            <Link
-              href="/sacco-admin/settings"
-              className="hover:underline text-base"
-            >
-              Profile
-            </Link>
-            <Button
-              variant="outline"
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="border-white text-black hover:bg-white hover: text-base py-1"
-            >
-              Logout
-            </Button>
-          </nav>
+
           <Button
             variant="outline"
-            className="md:hidden border-white cursor-pointer text-black hover:bg-white hover:"
+            className="border-white cursor-pointer text-black hover:bg-white hover:"
             onClick={() => setIsMenuOpen(true)}
           >
             <MenuIcon className="h-5 w-5" />
@@ -71,10 +27,10 @@ function SaccoAdminNavbar() {
         </div>
       </header>
 
-      {/* Mobile Sidebar */}
+      {/* Sidebar */}
       <div
         className={`fixed inset-y-0 right-0 z-50 w-[200px] sm:w-[300px] bg-white text-black transform ${isMenuOpen ? "translate-x-0" : "translate-x-full"
-          } transition-transform duration-300 ease-in-out md:hidden border-l border-[#ea1315] shadow-lg`}
+          } transition-transform duration-300 ease-in-out border-l border-[#ea1315] shadow-lg`}
       >
         <div className="flex flex-col h-full">
           <div className="p-4 flex justify-between items-center">
@@ -95,6 +51,13 @@ function SaccoAdminNavbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Dashboard
+            </Link>
+            <Link
+              href="/sacco-admin/loan-applications"
+              className="text-lg hover:"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Loan Applications
             </Link>
             <Link
               href="/sacco-admin/personal"
@@ -145,10 +108,10 @@ function SaccoAdminNavbar() {
         </div>
       </div>
 
-      {/* Overlay for Mobile Sidebar */}
+      {/* Overlay for Sidebar */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsMenuOpen(false)}
         ></div>
       )}
