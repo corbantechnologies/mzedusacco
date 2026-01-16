@@ -26,15 +26,14 @@ const CreateSavingTypeModal = ({ isOpen, onClose, refetchSavingTypes }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="">
-            Create New Saving Type
-          </DialogTitle>
+          <DialogTitle className="">Create New Saving Type</DialogTitle>
         </DialogHeader>
         <Formik
           initialValues={{
             name: "",
             description: "",
             interest_rate: 0,
+            can_guarantee: true,
           }}
           onSubmit={async (values) => {
             try {
@@ -86,6 +85,17 @@ const CreateSavingTypeModal = ({ isOpen, onClose, refetchSavingTypes }) => {
                   name="description"
                   className="border-black "
                 />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Field
+                  type="checkbox"
+                  id="can_guarantee"
+                  name="can_guarantee"
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <Label htmlFor="can_guarantee" className="text-black">
+                  Can be used as guarantee?
+                </Label>
               </div>
               <DialogFooter>
                 <Button
