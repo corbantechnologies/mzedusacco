@@ -54,6 +54,13 @@ function SaccoAdminNavbar() {
               Dashboard
             </Link>
             <Link
+              href="/sacco-admin/reports"
+              className="text-lg hover:"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Reports
+            </Link>
+            <Link
               href="/sacco-admin/loan-applications"
               className="text-lg hover:"
               onClick={() => setIsMenuOpen(false)}
