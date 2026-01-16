@@ -10,6 +10,7 @@
 // Admin reviews the loan application. Can approve or decline.
 //      If approves: status changes to Approved. Loan application ends here.
 //      If declines: status changes to Declined. Loan application ends here.
+// A Disbursed loan application is a loan that has been disbursed to the member. No further action can be taken on it.
 // Status changes are automatically done by the system except for the following:
 //      1. Member accepting or cancelling amendment.
 //      2. Admin approving or declining loan application.
@@ -18,8 +19,9 @@
 
 import { apiActions } from "@/tools/axios"
 
-export const createLoanApplication = async (Values, token) => {
-    await apiActions?.post("/api/v1/loanapplications/", Values, token)
+export const createLoanApplication = async (values, token) => {
+    const response = await apiActions?.post("/api/v1/loanapplications/", values, token)
+    return response?.data || {}
 }
 
 export const getLoanApplications = async (token) => {

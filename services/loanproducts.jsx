@@ -11,7 +11,7 @@ export const createLoanProduct = async (values, token) => {
 // get loan types
 export const getLoanProducts = async (token) => {
   const response = await apiActions?.get("/api/v1/loanproducts/", token);
-  return response?.data?.results;
+  return response?.data?.results || [];
 };
 
 // get loan type detail by reference
