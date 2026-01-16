@@ -33,16 +33,64 @@ import {
   ArrowUpOriginal,
 } from "lucide-react";
 
-export default function MemberFinancialSummary({ summary }) {
+import { downloadMemberSummary } from "@/services/membersummary";
+import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
+import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
+import { Download, Loader2 } from "lucide-react";
+
+export default function MemberFinancialSummary({ summary, memberNo }) {
+  const token = useAxiosAuth();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (!memberNo) return;
+    setIsDownloading(true);
+    try {
+      const blob = await downloadMemberSummary(memberNo, token);
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Financial_Summary_${summary.year}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      toast.success("Download started");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to download summary");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   if (!summary) return null;
 
   return (
     <Card className="shadow-md">
-      <CardHeader>
-        <CardTitle>Financial Summary ({summary.year})</CardTitle>
-        <CardDescription>
-          Yearly breakdown of your financial activities
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Financial Summary ({summary.year})</CardTitle>
+          <CardDescription>
+            Yearly breakdown of your financial activities
+          </CardDescription>
+        </div>
+        {memberNo && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="flex items-center gap-2"
+          >
+            {isDownloading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            Download PDF
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="savings" className="w-full">

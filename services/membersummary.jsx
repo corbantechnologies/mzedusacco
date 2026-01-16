@@ -10,11 +10,10 @@ export const getMemberSummary = async (memberNo, token) => {
   return response.data;
 };
 
-
 export const downloadMemberSummary = async (memberNo, token) => {
   const response = await apiActions?.get(
     `/api/v1/transactions/summary/yearly/${memberNo}/pdf/`,
-    token
+    { ...token, responseType: "blob" }
   );
   return response.data;
 };

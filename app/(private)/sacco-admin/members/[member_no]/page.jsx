@@ -41,6 +41,8 @@ import CreateVenturePayment from "@/forms/venturepayments/CreateVenturePayment";
 import { useFetchLoanProducts } from "@/hooks/loanproducts/actions";
 import { useFetchMemberSummary } from "@/hooks/summary/actions";
 import MemberFinancialSummary from "@/components/members/dashboard/MemberFinancialSummary";
+import { downloadMemberSummary } from "@/services/membersummary";
+import { Download, Loader2 } from "lucide-react";
 import EmptyState from "@/components/general/EmptyState";
 
 function MemberDetail() {
@@ -61,10 +63,35 @@ function MemberDetail() {
   const { data: loanProducts } = useFetchLoanProducts();
 
   const [isApproving, setIsApproving] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [depositModal, setDepositModal] = useState(false);
   const [loanModal, setLoanModal] = useState(false);
   const [ventureDepositModal, setVentureDepositModal] = useState(false);
   const [venturePaymentModal, setVenturePaymentModal] = useState(false);
+
+  const handleDownloadSummary = async () => {
+    if (!member_no) return;
+    setIsDownloading(true);
+    try {
+      const blob = await downloadMemberSummary(member_no, token);
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Financial_Summary_${new Date().getFullYear()}.pdf`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      toast.success("Download started");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to download summary");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const handleApprove = async () => {
     try {
@@ -214,15 +241,31 @@ function MemberDetail() {
                 </div>
               </div>
 
-              {!member?.is_approved && (
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  onClick={handleApprove}
-                  disabled={isApproving}
-                  className="bg-primary hover:bg-primary/90 text-white px-8"
+                  variant="outline"
+                  onClick={handleDownloadSummary}
+                  disabled={isDownloading}
+                  className="flex items-center gap-2 border-primary/20 text-primary hover:bg-primary/5"
                 >
-                  {isApproving ? "Approving..." : "Approve Member"}
+                  {isDownloading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  Download Summary
                 </Button>
-              )}
+
+                {!member?.is_approved && (
+                  <Button
+                    onClick={handleApprove}
+                    disabled={isApproving}
+                    className="bg-primary hover:bg-primary/90 text-white px-8"
+                  >
+                    {isApproving ? "Approving..." : "Approve Member"}
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -532,7 +575,7 @@ function MemberDetail() {
 
         {/* Financial Summary */}
         <div className="mt-8">
-          <MemberFinancialSummary summary={summary} />
+          <MemberFinancialSummary summary={summary} memberNo={member_no} />
         </div>
 
         {/* Modals */}
