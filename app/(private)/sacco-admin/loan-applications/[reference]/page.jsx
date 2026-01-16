@@ -269,7 +269,7 @@ export default function AdminLoanApplicationDetail({ params }) {
 
                         </div>
                         <p className="text-muted-foreground font-mono mt-1">
-                            Ref: {application.reference} {application.member ? ` | Member: ${application.member.name || application.created_by}` : ''}
+                            Ref: {application.reference} {application.member ? ` | Member: ${application.member}` : ''}
                         </p>
                     </div>
 
