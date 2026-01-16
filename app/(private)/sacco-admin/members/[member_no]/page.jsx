@@ -38,7 +38,7 @@ import CreateDepositAdmin from "@/forms/savingsdepostis/CreateDepositAdmin";
 import CreateLoanAccountAdmin from "@/forms/loans/CreateLoanAdmin";
 import CreateVentureDeposits from "@/forms/venturedeposits/CreateVentureDeposits";
 import CreateVenturePayment from "@/forms/venturepayments/CreateVenturePayment";
-import { useFetchLoanTypes } from "@/hooks/loantypes/actions";
+import { useFetchLoanTypes } from "@/hooks/loanproducts/actions";
 
 function MemberDetail() {
   const { member_no } = useParams();

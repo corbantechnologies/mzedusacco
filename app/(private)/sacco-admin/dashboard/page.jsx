@@ -13,7 +13,7 @@ import CreateMember from "@/forms/members/CreateMember";
 import CreateSavingType from "@/forms/savingtypes/CreateSavingType";
 import CreateVentureType from "@/forms/venturetypes/CreateVentureType";
 import { useFetchLoans } from "@/hooks/loans/actions";
-import { useFetchLoanTypes } from "@/hooks/loantypes/actions";
+import { useFetchLoanTypes } from "@/hooks/loanproducts/actions";
 import { useFetchMember, useFetchMembers } from "@/hooks/members/actions";
 import { useFetchSavings } from "@/hooks/savings/actions";
 import { useFetchSavingsTypes } from "@/hooks/savingtypes/actions";

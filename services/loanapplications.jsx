@@ -1,0 +1,68 @@
+"use client"
+
+import { apiActions } from "@/tools/axios"
+
+export const createLoanApplication = async (Values, token) => {
+    await apiActions?.post("/api/v1/loanapplications/", Values, token)
+}
+
+export const getLoanApplications = async (token) => {
+    await apiActions?.get("/api/v1/loanapplications/", token)
+}
+
+export const getLoanApplicationDetail = async (reference, token) => {
+    await apiActions?.get(`/api/v1/loanapplications/${reference}/`, token)
+}
+
+export const updateLoanApplication = async (reference, values, token) => {
+    await apiActions?.patch(`/api/v1/loanapplications/${reference}/`, values, token)
+}
+
+export const submitForAmendment = async (reference, token) => {
+    await apiActions?.post(`/api/v1/loanapplications/${reference}/submit-amendment/`, token)
+}
+
+export const amendLoanApplication = async (reference, values, token) => {
+    // Done by admin. 
+    // Basically updates the loan application: requested_amount can be changed.
+    // If it is okay with the admin, they just leave the requested_amount as it is.
+    // they have to always write an amendment note: amendment_note whether the loan application is changed or not.
+    await apiActions?.patch(`/api/v1/loanapplications/${reference}/amend/`, values, token)
+}
+
+export const acceptAmendment = async (reference, token) => {
+    // Done by member. 
+    // This action updates the loan application to In Progress or Ready for Submission
+    // In Progress: loan application is not fully covered by the member's savings so he/she needs to request for guarantee.
+    // Ready for Submission: loan application is fully covered by the member's savings and can proceed to the next step.
+    await apiActions?.post(`/api/v1/loanapplications/${reference}/accept-amendment/`, token)
+}
+
+export const rejectAmendment = async (reference, token) => {
+    // Done by member. 
+    // Application process is cancelled and ends here.
+    await apiActions?.post(`/api/v1/loanapplications/${reference}/cancel/`, token)
+}
+
+
+export const submitLoanApplication = async (reference, token) => {
+    // Done by member. 
+    // Application process is completed and member makes the final submission for the admins to approve or decline.
+    await apiActions?.post(`/api/v1/loanapplications/${reference}/submit/`, token)
+}
+
+export const approveLoanApplication = async (reference, token) => {
+    // Done by admin. 
+    // Application process is completed and member makes the final submission for the admins to approve or decline.
+    await apiActions?.post(`/api/v1/loanapplications/${reference}/status/`, {
+        status: "Approved"
+    }, token)
+}
+
+export const rejectLoanApplication = async (reference, token) => {
+    // Done by admin. 
+    // Application process is completed and member makes the final submission for the admins to approve or decline.
+    await apiActions?.post(`/api/v1/loanapplications/${reference}/status/`, {
+        status: "Declined"
+    }, token)
+}
