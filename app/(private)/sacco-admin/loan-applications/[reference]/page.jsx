@@ -35,7 +35,7 @@ import {
 import { AlertCircle, CheckCircle2, FileText, Pencil, X, Send, ThumbsUp, ThumbsDown, Edit } from "lucide-react";
 import { MemberUpdateLoanApplication } from "@/forms/loanapplications/MemberUpdateLoanApplication";
 import { AdminAmendLoanApplication } from "@/forms/loanapplications/AdminAmendLoanApplication";
-import { submitForAmendment, approveLoanApplication, rejectLoanApplication, acceptAmendment, rejectAmendment } from "@/services/loanapplications";
+import { submitForAmendment, approveLoanApplication, rejectLoanApplication, acceptAmendment, rejectAmendment, submitLoanApplication } from "@/services/loanapplications";
 import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
 import toast from "react-hot-toast";
 
@@ -97,34 +97,119 @@ export default function AdminLoanApplicationDetail({ params }) {
         }
     }
 
-    const handleApprove = async () => {
-        if (!confirm("Are you sure you want to approve this loan application?")) return;
-        setIsSubmitting(true);
-        try {
-            await approveLoanApplication(reference, token);
-            toast.success("Loan Application Approved!");
-            refetch();
-        } catch (error) {
-            console.error("Approval failed", error);
-            toast.error("Failed to approve application.");
-        } finally {
-            setIsSubmitting(false);
-        }
+    const handleSubmitLoanApplication = () => {
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+                <div className="font-medium text-gray-900">Submit application for approval?</div>
+                <div className="flex gap-3 justify-end">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => toast.dismiss(t.id)}
+                        className="h-8 border-gray-300"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        size="sm"
+                        className="h-8 bg-[#045e32] hover:bg-[#034625]"
+                        onClick={async () => {
+                            toast.dismiss(t.id);
+                            setIsSubmitting(true);
+                            try {
+                                await submitLoanApplication(reference, token);
+                                toast.success("Application submitted for approval!");
+                                refetch();
+                            } catch (error) {
+                                console.error("Submission failed", error);
+                                toast.error("Failed to submit application.");
+                            } finally {
+                                setIsSubmitting(false);
+                            }
+                        }}
+                    >
+                        Confirm
+                    </Button>
+                </div>
+            </div>
+        ), { duration: Infinity, position: 'top-center' });
     }
 
-    const handleReject = async () => {
-        if (!confirm("Are you sure you want to decline this loan application?")) return;
-        setIsSubmitting(true);
-        try {
-            await rejectLoanApplication(reference, token);
-            toast.success("Loan Application Declined.");
-            refetch();
-        } catch (error) {
-            console.error("Decline failed", error);
-            toast.error("Failed to decline application.");
-        } finally {
-            setIsSubmitting(false);
-        }
+    const handleApprove = () => {
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+                <div className="font-medium text-gray-900">Approve this loan application?</div>
+                <div className="flex gap-3 justify-end">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => toast.dismiss(t.id)}
+                        className="h-8 border-gray-300"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        size="sm"
+                        className="h-8 bg-[#045e32] hover:bg-[#034625]"
+                        onClick={async () => {
+                            toast.dismiss(t.id);
+                            setIsSubmitting(true);
+                            try {
+                                await approveLoanApplication(reference, token);
+                                toast.success("Loan Application Approved!");
+                                refetch();
+                            } catch (error) {
+                                console.error("Approval failed", error);
+                                toast.error("Failed to approve application.");
+                            } finally {
+                                setIsSubmitting(false);
+                            }
+                        }}
+                    >
+                        Confirm
+                    </Button>
+                </div>
+            </div>
+        ), { duration: Infinity, position: 'top-center' });
+    }
+
+    const handleReject = () => {
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+                <div className="font-medium text-gray-900">Decline this loan application?</div>
+                <div className="flex gap-3 justify-end">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => toast.dismiss(t.id)}
+                        className="h-8 border-gray-300"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        className="h-8"
+                        onClick={async () => {
+                            toast.dismiss(t.id);
+                            setIsSubmitting(true);
+                            try {
+                                await rejectLoanApplication(reference, token);
+                                toast.success("Loan Application Declined.");
+                                refetch();
+                            } catch (error) {
+                                console.error("Decline failed", error);
+                                toast.error("Failed to decline application.");
+                            } finally {
+                                setIsSubmitting(false);
+                            }
+                        }}
+                    >
+                        Confirm
+                    </Button>
+                </div>
+            </div>
+        ), { duration: Infinity, position: 'top-center' });
     }
 
     const schedule = useMemo(() => {
@@ -235,6 +320,25 @@ export default function AdminLoanApplicationDetail({ params }) {
                                             Accept Amendment
                                         </Button>
                                     </>
+                                )}
+                                {application.status === 'Ready for Submission' && (
+                                    <Button
+                                        onClick={handleSubmitLoanApplication}
+                                        disabled={isSubmitting}
+                                        className="bg-[#045e32] hover:bg-[#034625] w-full sm:w-auto"
+                                    >
+                                        {isSubmitting ? <MemberLoadingSpinner className="h-4 w-4 mr-2" /> : <Send className="mr-2 h-4 w-4" />}
+                                        Submit Application
+                                    </Button>
+                                )}
+                                {application.status === 'In Progress' && (
+                                    <Button
+                                        disabled={true}
+                                        variant="outline"
+                                        className="w-full sm:w-auto"
+                                    >
+                                        Request Guarantors (Coming Soon)
+                                    </Button>
                                 )}
                             </>
                         )}

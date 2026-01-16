@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/table";
 import { AlertCircle, CheckCircle2, FileText, Pencil, X, Send } from "lucide-react";
 import { MemberUpdateLoanApplication } from "@/forms/loanapplications/MemberUpdateLoanApplication";
-import { submitForAmendment, acceptAmendment, rejectAmendment } from "@/services/loanapplications";
+import { submitForAmendment, acceptAmendment, rejectAmendment, submitLoanApplication } from "@/services/loanapplications";
 import useAxiosAuth from "@/hooks/authentication/useAxiosAuth";
 import toast from "react-hot-toast";
 
@@ -60,6 +60,44 @@ export default function LoanApplicationDetail({ params }) {
             setIsSubmitting(false);
         }
     };
+
+    const handleSubmitLoanApplication = () => {
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+                <div className="font-medium text-gray-900">Submit application for approval?</div>
+                <div className="flex gap-3 justify-end">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => toast.dismiss(t.id)}
+                        className="h-8 border-gray-300"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        size="sm"
+                        className="h-8 bg-[#045e32] hover:bg-[#034625]"
+                        onClick={async () => {
+                            toast.dismiss(t.id);
+                            setIsSubmitting(true);
+                            try {
+                                await submitLoanApplication(reference, token);
+                                toast.success("Application submitted for approval!");
+                                refetch();
+                            } catch (error) {
+                                console.error("Submission failed", error);
+                                toast.error("Failed to submit application.");
+                            } finally {
+                                setIsSubmitting(false);
+                            }
+                        }}
+                    >
+                        Confirm
+                    </Button>
+                </div>
+            </div>
+        ), { duration: Infinity, position: 'top-center' });
+    }
 
     const handleAcceptAmendment = async () => {
         setIsSubmitting(true);
@@ -193,6 +231,25 @@ export default function LoanApplicationDetail({ params }) {
                                     Accept Amendment
                                 </Button>
                             </>
+                        )}
+                        {application.status === 'Ready for Submission' && (
+                            <Button
+                                onClick={handleSubmitLoanApplication}
+                                disabled={isSubmitting}
+                                className="bg-[#045e32] hover:bg-[#034625] w-full sm:w-auto"
+                            >
+                                {isSubmitting ? <MemberLoadingSpinner className="h-4 w-4 mr-2" /> : <Send className="mr-2 h-4 w-4" />}
+                                Submit Application
+                            </Button>
+                        )}
+                        {application.status === 'In Progress' && (
+                            <Button
+                                disabled={true}
+                                variant="outline"
+                                className="w-full sm:w-auto"
+                            >
+                                Request Guarantors (Coming Soon)
+                            </Button>
                         )}
                     </div>
                 </div>

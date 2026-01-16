@@ -74,7 +74,7 @@ export const submitLoanApplication = async (reference, token) => {
 export const approveLoanApplication = async (reference, token) => {
     // Done by admin. 
     // Application process is completed and member makes the final submission for the admins to approve or decline.
-    await apiActions?.post(`/api/v1/loanapplications/${reference}/status/`, {
+    await apiActions?.patch(`/api/v1/loanapplications/${reference}/status/`, {
         status: "Approved"
     }, token)
 }
@@ -82,7 +82,7 @@ export const approveLoanApplication = async (reference, token) => {
 export const rejectLoanApplication = async (reference, token) => {
     // Done by admin. 
     // Application process is completed and member makes the final submission for the admins to approve or decline.
-    await apiActions?.post(`/api/v1/loanapplications/${reference}/status/`, {
+    await apiActions?.patch(`/api/v1/loanapplications/${reference}/status/`, {
         status: "Declined"
     }, token)
 }
