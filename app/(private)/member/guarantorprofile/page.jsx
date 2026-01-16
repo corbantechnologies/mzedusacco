@@ -133,7 +133,7 @@ export default function GuarantorProfilePage() {
   };
 
   return (
-    <div className="space-y-6 pt-4">
+    <div className="space-y-6 mx-auto px-4 py-4">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">
           Guarantor Profile
@@ -260,7 +260,7 @@ export default function GuarantorProfilePage() {
 
       {/* Review Modal */}
       <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Review Guarantee Request</DialogTitle>
             <DialogDescription>
@@ -274,26 +274,148 @@ export default function GuarantorProfilePage() {
           {selectedRequest && (
             <div className="space-y-6 py-4">
               {/* Request Summary */}
-              <div className="rounded-lg bg-gray-50 p-4 space-y-3 border">
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <span className="text-muted-foreground">Loan Product:</span>
-                  <span className="font-medium text-right">
-                    {selectedRequest.loan_application_details?.product}
-                  </span>
-                  <span className="text-muted-foreground">Loan Amount:</span>
-                  <span className="font-medium text-right">
-                    {formatCurrency(
-                      selectedRequest.loan_application_details?.amount
-                    )}
-                  </span>
-                  <span className="text-muted-foreground">Date Requested:</span>
-                  <span className="font-medium text-right">
-                    {format(
-                      new Date(selectedRequest.created_at),
-                      "MMM dd, yyyy"
-                    )}
-                  </span>
+              {/* Loan Details & Projection */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Loan Overview</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Product:</span>
+                        <span className="font-medium">
+                          {selectedRequest.loan_application_details?.product}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Amount:</span>
+                        <span className="font-medium">
+                          {formatCurrency(
+                            selectedRequest.loan_application_details?.amount
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Remaining to Cover:
+                        </span>
+                        <span className="font-bold text-amber-600">
+                          {formatCurrency(
+                            selectedRequest.loan_application_details
+                              ?.remaining_to_cover
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Term:</span>
+                        <span className="font-medium">
+                          {
+                            selectedRequest.loan_application_details
+                              ?.projection_snapshot?.term_months
+                          }{" "}
+                          Months
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Financials</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Total Interest:
+                        </span>
+                        <span className="font-medium">
+                          {formatCurrency(
+                            selectedRequest.loan_application_details
+                              ?.projection_snapshot?.total_interest
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Monthly Payment:
+                        </span>
+                        <span className="font-medium">
+                          {formatCurrency(
+                            selectedRequest.loan_application_details
+                              ?.projection_snapshot?.monthly_payment
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Total Repayment:
+                        </span>
+                        <span className="font-medium">
+                          {formatCurrency(
+                            selectedRequest.loan_application_details
+                              ?.projection_snapshot?.total_repayment
+                          )}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
+
+                {/* Repayment Schedule */}
+                {selectedRequest.loan_application_details?.projection_snapshot
+                  ?.schedule?.length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">
+                        Projected Repayment Schedule
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="max-h-[300px] overflow-y-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-gray-50/50">
+                              <TableHead className="w-[100px]">Date</TableHead>
+                              <TableHead>Principal</TableHead>
+                              <TableHead>Interest</TableHead>
+                              <TableHead>Total</TableHead>
+                              <TableHead className="text-right">
+                                Balance
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {selectedRequest.loan_application_details.projection_snapshot.schedule.map(
+                              (row, index) => (
+                                <TableRow key={index}>
+                                  <TableCell className="text-xs">
+                                    {format(
+                                      new Date(row.due_date),
+                                      "MMM dd, yyyy"
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-xs">
+                                    {formatCurrency(row.principal_due)}
+                                  </TableCell>
+                                  <TableCell className="text-xs">
+                                    {formatCurrency(row.interest_due)}
+                                  </TableCell>
+                                  <TableCell className="text-xs font-semibold text-[#045e32]">
+                                    {formatCurrency(row.total_due)}
+                                  </TableCell>
+                                  <TableCell className="text-xs text-right text-muted-foreground">
+                                    {formatCurrency(row.balance_after)}
+                                  </TableCell>
+                                </TableRow>
+                              )
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               {!actionType ? (
