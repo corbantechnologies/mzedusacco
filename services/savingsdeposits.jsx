@@ -3,7 +3,11 @@ import { apiActions, apiMultipartActions } from "@/tools/axios";
 
 // Should not be used
 export const createSavingsDeposit = async (values, token) => {
-  await apiActions?.post("/api/v1/savingsdeposits/admin/create/", values, token);
+  await apiActions?.post(
+    "/api/v1/savingsdeposits/admin/create/",
+    values,
+    token
+  );
 };
 
 export const getSavingsDeposits = async (token) => {
@@ -25,4 +29,14 @@ export const createBulkSavingsDeposits = async (formData, token) => {
     formData,
     token
   );
+};
+
+// Used for Mpesa
+export const createSavingsDepositMpesa = async (values, token) => {
+  const response = await apiActions?.post(
+    "/api/v1/savingsdeposits/",
+    values,
+    token
+  );
+  return response?.data;
 };
