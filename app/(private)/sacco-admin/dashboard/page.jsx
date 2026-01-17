@@ -144,7 +144,7 @@ export default function SaccoAdminDashboard() {
 
       {/* Tabs Content */}
       <Tabs defaultValue="members" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[600px] bg-white border">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:w-[600px] h-auto bg-white border">
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="savings">Saving Types</TabsTrigger>
           <TabsTrigger value="loans">Loan Products</TabsTrigger>
