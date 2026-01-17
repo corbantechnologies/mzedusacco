@@ -80,7 +80,7 @@ export default function DepositProcessing() {
         } else if (tries >= maxRetries) {
           clearInterval(interval);
           setPaymentMessage(
-            "Payment verification timed out. Please check your messages."
+            "Payment verification timed out. Please check your messages. \n\nIf you received the confirmation message, please ignore this message."
           );
           toast("Taking longer than expected...", { icon: "⏳" });
           setIsPolling(false);
