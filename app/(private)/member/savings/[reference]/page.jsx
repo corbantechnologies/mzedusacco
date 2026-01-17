@@ -314,52 +314,54 @@ function SavingsDetail() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50">
-                      <TableHead>Date</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Method</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedTransactions.map((t, i) => (
-                      <TableRow key={i}>
-                        <TableCell>{formatDate(t.date)}</TableCell>
-                        <TableCell>
-                          <span
-                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead>Date</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Method</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedTransactions.map((t, i) => (
+                        <TableRow key={i}>
+                          <TableCell>{formatDate(t.date)}</TableCell>
+                          <TableCell>
+                            <span
+                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
                                                         ${
                                                           t.type ===
                                                           "Withdrawal"
                                                             ? "bg-red-100 text-red-800"
                                                             : "bg-green-100 text-green-800"
                                                         }`}
+                            >
+                              {t.type}
+                            </span>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {formatCurrency(t.amount)}
+                          </TableCell>
+                          <TableCell>{t.method}</TableCell>
+                          <TableCell>{t.status}</TableCell>
+                        </TableRow>
+                      ))}
+                      {paginatedTransactions.length === 0 && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={5}
+                            className="text-center h-24 text-muted-foreground"
                           >
-                            {t.type}
-                          </span>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {formatCurrency(t.amount)}
-                        </TableCell>
-                        <TableCell>{t.method}</TableCell>
-                        <TableCell>{t.status}</TableCell>
-                      </TableRow>
-                    ))}
-                    {paginatedTransactions.length === 0 && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={5}
-                          className="text-center h-24 text-muted-foreground"
-                        >
-                          No transactions found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                            No transactions found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
 
                 {totalPages > 1 && (
                   <div className="flex items-center justify-end space-x-2 py-4">
